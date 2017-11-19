@@ -1,0 +1,13 @@
+# Visual Studio Code
+.vscode/
+
+# NodeJS
+node_modules/
+
+# Private Modules
+modules/node-dori
+commands/*
+config.json
+
+# Exclusions
+!commands/example.js
