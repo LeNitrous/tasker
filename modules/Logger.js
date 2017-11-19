@@ -24,8 +24,8 @@ module.exports = {
 	
 	logCommand(guildName, userName, commandName, channelName) {
 		if (guildName)
-			return console.log(`${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan('#')}${chalk.bold.cyan(channelName)} ${chalk.bold.yellow('\u00BB')} ${commandName}`);
-		return console.log(`${chalk.bold.green(userName)} ${chalk.bold.yellow('\u00BB')} ${commandName}`);
+			return console.log(`${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan('#')}${chalk.bold.cyan(channelName)} ${chalk.bold.yellow('»')} ${commandName}`);
+		return console.log(`${chalk.bold.green(userName)} ${chalk.bold.yellow('»')} ${commandName}`);
 	}
 	
 };

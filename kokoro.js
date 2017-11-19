@@ -10,12 +10,12 @@ const ConfigDefaults = {
     owner: "",
     prefix: "]",
     reply : {
-        PermsServer: "⚠️ | This command is only available in guilds.",
-        PermsDMChat: "⚠️ | This command is only available in direct messages.",
-        PermsBotOwner: "⚠️ | You don't have permission to use this command.",
-        PermsElevatedPerms: "⚠️ | You don't have permission to use this command.",
-        PermsServerOwner: "⚠️ | You don't have permission to use this command.",
-        Error: "💢 | An error has occured!",
+        PermsServer: "⚠️ » This command is only available in guilds.",
+        PermsDMChat: "⚠️ » This command is only available in direct messages.",
+        PermsBotOwner: "⚠️ » You don't have permission to use this command.",
+        PermsElevatedPerms: "⚠️ » You don't have permission to use this command.",
+        PermsServerOwner: "⚠️ » You don't have permission to use this command.",
+        Error: "💢 » An error has occured!",
     }
 };
 
@@ -75,15 +75,44 @@ Kokoro.LoadCommands = (dir) => {
             }
         });
     })
-}
+};
+
+Kokoro.ReloadCommand = (cmd) => {
+    com = cmd.join('/');
+    return new Promise((resolve, reject) => {
+        try {
+            delete require.cache[require.resolve(`${dirCMD}/${com}`)];
+            let req = require(`${dirCMD}/${com}.js`);
+            let Commands = Kokoro.Commands;
+            if (cmd.length == 2) {
+                Commands[cmd[0]][cmd[1]].help = req.help;
+                Commands[cmd[0]][cmd[1]].args = req.args;
+                Commands[cmd[0]][cmd[1]].preq = req.preq;
+                Commands[cmd[0]][cmd[1]].perm = req.perm;
+                Commands[cmd[0]][cmd[1]].run = req.run;
+            }
+            else {
+                Commands[cmd[0]].help = req.help;
+                Commands[cmd[0]].args = req.args;
+                Commands[cmd[0]].preq = req.preq;
+                Commands[cmd[0]].perm = req.perm;
+                Commands[cmd[0]].run = req.run                
+            }
+            resolve();
+        }
+        catch (e) {
+            reject(e);
+        }
+    })
+};
 
 var config = Kokoro.Config;
 
 if (config.token.length == 0)
-throw new Error('Token has not been set!');
+throw new Error('Token has not been set!\nThe bot will not be able to login. Please your bot\'ts token in your config.json.');
 
 if (config.owner.length == 0)
-throw new Error('Owner ID has not been set!');
+throw new Error('Owner ID has not been set!\nYou will not be able to access administrator commands. Please set your Client ID in your config.json.');
 
 Kokoro
     .on('warn', w => logger.warn(w))
@@ -96,7 +125,6 @@ logger.infoGeneric("Loading commands...");
 Kokoro.LoadCommands(dirCMD)
     .then(d => {
         Kokoro.Commands = d;
-        console.log(d);
         Kokoro.login(config.token);
     });
 
@@ -153,14 +181,6 @@ function CheckPermissions(m, c) {
     let guild = m.guild;
     let preq = c.preq;
     let perm = c.perm;
-
-    //
-    //  DMChatOnly - Direct Messages
-    //  ServerOnly - Guild Messages
-    //  BotOwnerOnly - Bot Owner Messages
-    //  HasElevatedPerms - Authors with Permissions
-    //  ServerOwnerOnly - Server Owner Messages
-    //
 
     if (preq.contains("DMChatOnly") && chan.guild != undefined) {
         chan.send(reply.PermsDMChat);

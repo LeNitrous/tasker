@@ -8,6 +8,7 @@ node_modules/
 modules/node-dori
 commands/*
 config.json
+test.js
 
 # Exclusions
 !commands/example.js
