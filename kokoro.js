@@ -1,9 +1,10 @@
 const Discord = require('discord.js');
-const logger = require('./modules/Logger.js')
+const logger = require('./modules/Logger.js');
 const fs = require('fs');
 
 const dirCMD = './commands';
 const dirConf = './config.json';
+const dirData = './data';
 
 const ConfigDefaults = {
     token: "",
@@ -16,6 +17,7 @@ const ConfigDefaults = {
         PermsElevatedPerms: "⚠️ » You don't have permission to use this command.",
         PermsServerOwner: "⚠️ » You don't have permission to use this command.",
         Error: "💢 » An error has occured!",
+        Reload: "🔁 » Reloaded `{0}` successfully."
     }
 };
 
@@ -24,14 +26,20 @@ if (!fs.existsSync(dirCMD)) {
     fs.mkdirSync(dirCMD);
 };
 
+if (!fs.existsSync(dirData)) {
+    logger.warn('Data directory doesn\'t exist! Creating one...');
+    fs.mkdirSync(dirData); 
+};
+
 if (!fs.existsSync(dirConf)) {
     logger.warn('Config file doesn\'t exist! Creating one...');
     fs.writeFileSync(dirConf, JSON.stringify(ConfigDefaults));
-}
+};
 
 const Kokoro = new Discord.Client();
 
 Kokoro.Config = require(dirConf);
+Kokoro.Data = dirData;
 Kokoro.LoadCommands = (dir) => {
     return new Promise((resolve, reject) => {
         let arr = {};
@@ -84,26 +92,63 @@ Kokoro.ReloadCommand = (cmd) => {
             delete require.cache[require.resolve(`${dirCMD}/${com}`)];
             let req = require(`${dirCMD}/${com}.js`);
             let Commands = Kokoro.Commands;
+            let prop, ret;
             if (cmd.length == 2) {
-                Commands[cmd[0]][cmd[1]].help = req.help;
-                Commands[cmd[0]][cmd[1]].args = req.args;
-                Commands[cmd[0]][cmd[1]].preq = req.preq;
-                Commands[cmd[0]][cmd[1]].perm = req.perm;
-                Commands[cmd[0]][cmd[1]].run = req.run;
+                prop = Commands[cmd[0]][cmd[1]];
+                ret = [cmd[0], cmd[1]];
             }
             else {
-                Commands[cmd[0]].help = req.help;
-                Commands[cmd[0]].args = req.args;
-                Commands[cmd[0]].preq = req.preq;
-                Commands[cmd[0]].perm = req.perm;
-                Commands[cmd[0]].run = req.run                
+                prop = Commands[cmd[0]];
+                ret = [cmd[0]];
             }
-            resolve();
+            prop.help = req.help;
+            prop.args = req.args;
+            prop.preq = req.preq;
+            prop.perm = req.perm;
+            prop.run = req.run;
+            resolve(ret);
         }
         catch (e) {
             reject(e);
         }
     })
+};
+
+Kokoro.GetCommand = (msg, coms, pref) => {
+    return new Promise((resolve, reject) => {
+        let arr = msg.content.split(' ');
+        let arg1, arg2, args, cmd, par;
+        arg1 = arr.shift().slice(pref.length);
+        if (!coms.hasOwnProperty(arg1)) reject();
+        try {
+            if (coms[arg1] instanceof Array) {
+                arg2 = arr.shift();
+                args = arr;
+                par = coms[arg1]
+                cmd = coms[arg1][arg2];
+            }
+            else if (coms[arg1] instanceof Object) {
+                args = arr;
+                cmd = coms[arg1];
+            }
+            resolve([cmd, args, par]);
+        }
+        catch (e) {
+            reject(new Error('Caught Command Expection.\n' + e));
+        }
+    });
+};
+
+Kokoro.Shutdown = () => {
+    logger.infoGeneric('Shutting down bot...');
+    Kokoro.destroy()
+        .then(() => {
+            process.exit();
+        })
+        .catch(e => {
+            console.log(e);
+            process.exit();
+        });
 };
 
 var config = Kokoro.Config;
@@ -135,35 +180,40 @@ Kokoro.on('message', m => {
     let Commands = Kokoro.Commands;
 
     if (!m.content.startsWith(prefix)) return;
-
-    let arr = m.content.split(' ');
-    let cmd = arr.shift().slice(prefix.length);
-    let sub, args, com;
-
-    if (!Commands.hasOwnProperty(cmd)) return;
-
-    try {
-        if (Commands[cmd] instanceof Array) {
-            sub = arr.shift();
-            args = arr;
-            com = Commands[cmd][sub];
-        }
-        else if (Commands[cmd] instanceof Object) {
-            args = arr;
-            com = Commands[cmd];
-        }
-        if (!CheckPermissions(m, com)) return;
-        com.run(Kokoro, m, args);
-    }
-    catch (e) {
-        logger.error(e.stack);
-        m.channel.send(config.reply.Error);
-    }
-
+    m.channel.startTyping();
+    Kokoro.GetCommand(m, Commands, prefix)
+        .then(arr => {
+            let cmd = arr[0];
+            let args = arr[1];
+            if (!CheckPermissions(m, cmd)) return;
+            if (!cmd.run)
+                return logger.warn('Command has no run action set!');
+            cmd.run(Kokoro, m, args);
+        })
+        .catch(err => {
+            logger.error(err);
+        });
+    m.channel.stopTyping(true);
     logger.logCommand(m.channel.guild === undefined ? null: m.channel.guild.name, 
         m.author.username, m.content.slice(prefix.length), m.channel.name);
 
 });
+
+process.on('SIGINT', () => {
+    Kokoro.Shutdown();
+});
+
+process.on('SIGTERM', () => {
+    Kokoro.Shutdown();
+});
+
+process.on('SIGHUP', () => {
+    Kokoro.Shutdown();
+});
+
+process.on('SIGBREAK', () => {
+    Kokoro.Shutdown();
+})
 
 Array.prototype.contains = function ( needle ) {
     for (i in this) {

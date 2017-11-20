@@ -19,7 +19,7 @@ module.exports = {
 	},
 	
 	error(text, h = 'ERROR') {
-		return console.log(`${chalk.bgRed.black(` ${h} `)} ${text}`);
+		return console.log(`${chalk.bgRed.white(` ${h} `)} ${text}`);
 	},
 	
 	logCommand(guildName, userName, commandName, channelName) {
