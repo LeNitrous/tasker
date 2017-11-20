@@ -40,6 +40,8 @@ const Kokoro = new Discord.Client();
 
 Kokoro.Config = require(dirConf);
 Kokoro.Data = dirData;
+Kokoro.Commands = {};
+
 Kokoro.LoadCommands = (dir) => {
     return new Promise((resolve, reject) => {
         let arr = {};
@@ -101,10 +103,10 @@ Kokoro.ReloadCommand = (cmd) => {
                 prop = Commands[cmd[0]];
                 ret = [cmd[0]];
             }
-            prop.help = req.help;
-            prop.args = req.args;
-            prop.preq = req.preq;
-            prop.perm = req.perm;
+            prop.help = req.help || '';
+            prop.args = req.args || [''];
+            prop.preq = req.preq || [''];
+            prop.perm = req.perm || [''];
             prop.run = req.run;
             resolve(ret);
         }
