@@ -12,3 +12,5 @@ test.js
 
 # Exclusions
 !commands/example.js
+!commands/reload.js
+!commands/help.js

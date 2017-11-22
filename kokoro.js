@@ -2,6 +2,9 @@ const Discord = require('discord.js');
 const logger = require('./modules/Logger.js');
 const fs = require('fs');
 
+const Command = require('./models/Command.js');
+const Group = require('./models/Group.js');
+
 const dirCMD = './commands';
 const dirConf = './config.json';
 const dirData = './data';
@@ -10,14 +13,17 @@ const ConfigDefaults = {
     token: "",
     owner: "",
     prefix: "]",
+    aggressive: true,
     reply : {
         PermsServer: "⚠️ » This command is only available in guilds.",
         PermsDMChat: "⚠️ » This command is only available in direct messages.",
-        PermsBotOwner: "⚠️ » You don't have permission to use this command.",
-        PermsElevatedPerms: "⚠️ » You don't have permission to use this command.",
-        PermsServerOwner: "⚠️ » You don't have permission to use this command.",
+        PermsBotOwner: "🚫 » You don't have permission to use this command.",
+        PermsElevatedPerms: "🚫 » You don't have permission to use this command.",
+        PermsServerOwner: "🚫 » You don't have permission to use this command.",
         Error: "💢 » An error has occured!",
-        Reload: "🔁 » Reloaded `{0}` successfully."
+        Reload: "🔁 » Reloaded `{0}` successfully.",
+        ReloadNotFound: "⚠️ » `{0}` doesn't exist",
+        StatusBusy: "Reloading!"
     }
 };
 
@@ -40,6 +46,9 @@ const Kokoro = new Discord.Client();
 
 Kokoro.Config = require(dirConf);
 Kokoro.Data = dirData;
+Kokoro.ShouldRunCommands = true;
+Kokoro.CommandsDir = dirCMD;
+Kokoro.ConfigDir = dirConf;
 Kokoro.Commands = {};
 
 Kokoro.LoadCommands = (dir) => {
@@ -56,7 +65,7 @@ Kokoro.LoadCommands = (dir) => {
                 files.forEach(file => {
                     let prop = require(`${dir}/${file}`);
                     let name = file.split('.')[0];
-                    arr[name] = {};
+                    arr[name] = new Command();
                     arr[name].help = prop.help || '';
                     arr[name].args = prop.args || [''];
                     arr[name].preq = prop.preq || [''];
@@ -65,12 +74,12 @@ Kokoro.LoadCommands = (dir) => {
                 });
         
                 dirs.forEach(d => {
-                    arr[d] = [];
+                    arr[d] = new Group();
                     let files = fs.readdirSync(`${dir}/${d}`).filter(o => { return fs.lstatSync(`${dir}/${d}/${o}`).isFile() });
                     files.forEach(file => {
                         let prop = require(`${dir}/${d}/${file}`);
                         let name = file.split('.')[0];
-                        arr[d][name] = {};
+                        arr[d][name] = new Command();
                         arr[d][name].help = prop.help || '';
                         arr[d][name].args = prop.args || [''];
                         arr[d][name].preq = prop.preq || [''];
@@ -113,7 +122,7 @@ Kokoro.ReloadCommand = (cmd) => {
         catch (e) {
             reject(e);
         }
-    })
+    })        
 };
 
 Kokoro.GetCommand = (msg, coms, pref) => {
@@ -123,13 +132,13 @@ Kokoro.GetCommand = (msg, coms, pref) => {
         arg1 = arr.shift().slice(pref.length);
         if (!coms.hasOwnProperty(arg1)) reject();
         try {
-            if (coms[arg1] instanceof Array) {
+            if (coms[arg1] instanceof Group) {
                 arg2 = arr.shift();
                 args = arr;
                 par = coms[arg1]
                 cmd = coms[arg1][arg2];
             }
-            else if (coms[arg1] instanceof Object) {
+            else if (coms[arg1] instanceof Command) {
                 args = arr;
                 cmd = coms[arg1];
             }
@@ -138,7 +147,7 @@ Kokoro.GetCommand = (msg, coms, pref) => {
         catch (e) {
             reject(new Error('Caught Command Expection.\n' + e));
         }
-    });
+    });        
 };
 
 Kokoro.Shutdown = () => {
@@ -176,6 +185,7 @@ Kokoro.LoadCommands(dirCMD)
     });
 
 Kokoro.on('message', m => {
+    if (!Kokoro.ShouldRunCommands) return;
     if (m.author.bot) return;
 
     let prefix = config.prefix;
@@ -198,7 +208,6 @@ Kokoro.on('message', m => {
     m.channel.stopTyping(true);
     logger.logCommand(m.channel.guild === undefined ? null: m.channel.guild.name, 
         m.author.username, m.content.slice(prefix.length), m.channel.name);
-
 });
 
 process.on('SIGINT', () => {
@@ -227,6 +236,7 @@ Array.prototype.contains = function ( needle ) {
 function CheckPermissions(m, c) {
     let reply = config.reply;
     let owner = config.owner;
+    let aggr = config.aggressive;
     let chan = m.channel;
     let member = m.member;
     let author = m.author;
@@ -243,15 +253,18 @@ function CheckPermissions(m, c) {
         return false;
     };
     if (preq.contains("BotOwnerOnly") && author.id != owner) {
-        chan.send(reply.PermsBotOwner);
+        if (aggr)
+            chan.send(reply.PermsBotOwner);
         return false;
     };
     if (preq.contains("HasElevatedPerms") && member.permissions.has(perm, true)) {
-        chan.send(reply.PermsElevatedPerms);
+        if (aggr)
+            chan.send(reply.PermsElevatedPerms);
         return false;
     };
     if (preq.contains("ServerOwnerOnly") && auth.id != guild.ownerID) {
-        chan.send(reply.PermsServerOwner);
+        if (aggr)
+            chan.send(reply.PermsServerOwner);
         return false;
     };
 
