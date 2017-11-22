@@ -39,10 +39,10 @@ module.exports = {
                 var name = args.join(' ');
                 helpMenu.push(`# ${name}\n\t- Help: ${com.help}\n\t- Arguments: ${com.args.join(' ')}`);
             };
-        }
-        else if (args.length >= 3){
-            return msg.channel.send('❌ » No command exists.')
         };
-        msg.author.send(helpMenu.join('\n'), {code: 'md'});
+        if (helpMenu.length == 0)
+            msg.author.send('❌ » No command exists.');
+        else
+            msg.author.send(helpMenu.join('\n'), {code: 'md'});
     }
 }

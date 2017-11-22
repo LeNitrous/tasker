@@ -17,10 +17,12 @@ module.exports = {
                 });
         }
         else {
-            bot.ReloadCommand(args, bot.CommandsDir)
+            bot.ReloadCommand(args, bot.CommandsDir, bot.Commands)
                 .then(com => {
-                    if (com)
+                    if (com) {
                         msg.channel.send(bot.Config.reply.Reload.replace('{0}', com.join(' ')));
+                        console.log(`Module ${com} has been reloaded`);
+                    }
                     else
                         msg.channel.send(bot.Config.reply.Error);
                 })
