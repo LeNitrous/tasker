@@ -1,132 +1,61 @@
 const Discord = require('discord.js');
 const Handler = require('./modules/Handler.js');
-const logger = require('./modules/Logger.js');
-const fs = require('fs');
+const Logger = require('./modules/Logger.js');
+const Setup= require('./setup.js');
 
-const dirCMD = './commands';
-const dirConf = './config.json';
-const dirData = './data';
-
-const ConfigDefaults = {
-    token: "",
-    owner: "",
-    prefix: "]",
-    aggressive: true,
-    reply : {
-        PermsServer: "⚠️ » This command is only available in guilds.",
-        PermsDMChat: "⚠️ » This command is only available in direct messages.",
-        PermsBotOwner: "🚫 » You don't have permission to use this command.",
-        PermsElevatedPerms: "🚫 » You don't have permission to use this command.",
-        PermsServerOwner: "🚫 » You don't have permission to use this command.",
-        Error: "💢 » An error has occured!",
-        Reload: "🔁 » Reloaded `{0}` successfully.",
-        ReloadNotFound: "⚠️ » `{0}` doesn't exist",
-        StatusBusy: "Reloading!"
-    }
-};
-
-if (!fs.existsSync(dirCMD)) {
-    logger.warn('Commands directory doesn\'t exist! Creating one...');
-    fs.mkdirSync(dirCMD);
-};
-
-if (!fs.existsSync(dirData)) {
-    logger.warn('Data directory doesn\'t exist! Creating one...');
-    fs.mkdirSync(dirData); 
-};
-
-if (!fs.existsSync(dirConf)) {
-    logger.warn('Config file doesn\'t exist! Creating one...');
-    fs.writeFileSync(dirConf, JSON.stringify(ConfigDefaults));
-};
+Logger.infoGeneric('Initializing...')
+Setup.init();
 
 const Kokoro = new Discord.Client();
 
-Kokoro.Config = require(dirConf);
-Kokoro.Data = dirData;
-Kokoro.ShouldRunCommands = true;
-Kokoro.CommandsDir = dirCMD;
-Kokoro.ConfigDir = dirConf;
 Kokoro.Commands = {};
+Kokoro.Config = require('./config.json');
+Kokoro.Data = './data';
 
-Kokoro.LoadCommands = Handler.LoadCommands;
-Kokoro.ReloadCommand = Handler.ReloadCommand;
-Kokoro.GetCommand = Handler.GetCommand;
+Kokoro.ShouldRunCommands = true;
 Kokoro.CheckPermissions = Handler.CheckPermissions;
-
-Kokoro.Shutdown = () => {
-    logger.infoGeneric('Shutting down bot...');
-    Kokoro.destroy()
-        .then(() => {
-            process.exit();
-        })
-        .catch(e => {
-            console.log(e);
-            process.exit();
-        });
-};
-
-var config = Kokoro.Config;
-
-if (config.token.length == 0)
-throw new Error('Token has not been set!\nThe bot will not be able to login. Please your bot\'ts token in your config.json.');
-
-if (config.owner.length == 0)
-throw new Error('Owner ID has not been set!\nYou will not be able to access administrator commands. Please set your Client ID in your config.json.');
+Kokoro.ReloadCommand = Handler.ReloadCommand;
+Kokoro.LoadCommands = Handler.LoadCommands;
+Kokoro.GetCommand = Handler.GetCommand;
+Kokoro.Log = Logger;
 
 Kokoro
-    .on('warn', w => logger.warn(w))
-    .on('error', e => logger.error(e))
-    .on('disconnect', () => logger.error('CLIENT DISCONNECTED', 'WARN'))
-    .on('ready', () => logger.info('CLIENT CONNECTED'));
+    .on('warn', w => Logger.warn(w))
+    .on('error', e => Logger.error(e))
+    .on('disconnect', () => Logger.error('CLIENT DISCONNECTED', 'WARN'))
+    .on('ready', () => Logger.info('CLIENT CONNECTED'));
 
-logger.infoGeneric("Loading commands...");
-
-Kokoro.LoadCommands(dirCMD)
-    .then(d => {
-        Kokoro.Commands = d;
-        Kokoro.login(config.token);
+Kokoro.LoadCommands('./commands')
+    .then(com => {
+        Kokoro.Commands = com;
+        Kokoro.login(Kokoro.Config.token);
     })
-    .catch(e => {
-        console.log(e);
+    .catch(err => {
+        Logger.error(err);
     });
 
-Kokoro.on('message', m => {
+Kokoro.on('message', msg => {
     if (!Kokoro.ShouldRunCommands) return;
-    if (m.author.bot) return;
+    if (msg.author.bot) return;
 
-    let prefix = config.prefix;
+    let Prefix = Kokoro.Config.prefix;
     let Commands = Kokoro.Commands;
 
-    if (!m.content.startsWith(prefix)) return;
-    Kokoro.GetCommand(m, Commands, prefix)
-        .then(arr => {
-            let cmd = arr[0];
-            let args = arr[1];
-            if (!Kokoro.CheckPermissions(m, cmd, config)) return;
-            if (!cmd.run)
-                return logger.warn('Command has no run action set!');
-            cmd.run(Kokoro, m, args);
+    if (!msg.content.startsWith(Prefix)) return;
+
+    Kokoro.GetCommand(msg, Commands, Prefix)
+        .then(obj => {
+            let com = obj[0];
+            let arg = obj[1];
+            if (!Kokoro.CheckPermissions(msg, com, Kokoro.Config)) return;
+            if (!com.run)
+                return Logger.warn('Command has no run action set!');
+            com.run(Kokoro, msg, arg);
         })
         .catch(err => {
-            logger.error(err);
+            Logger.error(err);
         });
-    logger.logCommand(m.channel.guild === undefined ? null: m.channel.guild.name, 
-        m.author.username, m.content.slice(prefix.length), m.channel.name);
-});
 
-process.on('SIGINT', () => {
-    Kokoro.Shutdown();
-});
-
-process.on('SIGTERM', () => {
-    Kokoro.Shutdown();
-});
-
-process.on('SIGHUP', () => {
-    Kokoro.Shutdown();
-});
-
-process.on('SIGBREAK', () => {
-    Kokoro.Shutdown();
+    Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
+        msg.author.username, msg.content.slice(Prefix.length), msg.channel.name);
 });

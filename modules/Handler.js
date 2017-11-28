@@ -1,63 +1,66 @@
 const fs = require('fs');
-const Command = require('../models/Command.js');
-const Group = require('../models/Group.js');
 
-const root = '../';
+class Command {
+    constructor(data) {
+        this.name = data.name || 'unnamed';
+        this.help = data.help || '';
+        this.preq = data.preq || [''];
+        this.perm = data.perm || [''];
+        this.run = data.run;
+    }
+}
+
+class Group extends Object {
+    constructor() {
+        super();
+    }
+}
 
 module.exports = {
     LoadCommands(dir) {
         return new Promise((resolve, reject) => {
-            let arr = {};
-            fs.readdir(dir, (e, f) => {
-                if (e) reject(new Error(e));
+            let list = {};
+            fs.readdir(dir, (err, file) => {
+                if (err) reject(new Error(e));
                 try {
-                    let files, dirs;
-                    files = f.filter(o => { return fs.lstatSync(`${dir}/${o}`).isFile() });
-                    files = files.filter(o => { return o.endsWith('.js') });
-                    dirs = f.filter(o => { return fs.lstatSync(`${dir}/${o}`).isDirectory() });
+                    let files, folders;
+                    files = file.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isFile() });
+                    files = files.filter(obj => { return obj.endsWith('.js') });
+                    folders = file.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isDirectory() });
 
-                    files.forEach(file => {
-                        let prop = require(`${root}${dir}/${file}`);
-                        let name = file.split('.')[0];
-                        arr[name] = new Command();
-                        arr[name].help = prop.help || '';
-                        arr[name].args = prop.args || [''];
-                        arr[name].preq = prop.preq || [''];
-                        arr[name].perm = prop.perm || [''];
-                        arr[name].run = prop.run;
+                    files.forEach(obj => {
+                        let prop = require(`../${dir}/${obj}`);
+                        let com = obj.split('.')[0];
+                        list[com] = new Command(prop);
                     });
-            
-                    dirs.forEach(d => {
-                        arr[d] = new Group();
-                        let files = fs.readdirSync(`${dir}/${d}`).filter(o => { return fs.lstatSync(`${dir}/${d}/${o}`).isFile() });
+
+                    folders.forEach(obj => {
+                        list[obj] = new Group();
+                        let files = fs.readdirSync(`${dir}/${obj}`).filter(file => { return fs.lstatSync(`${dir}/${obj}/${file}`).isFile() });
                         files.forEach(file => {
-                            let prop = require(`${root}${dir}/${d}/${file}`);
-                            let name = file.split('.')[0];
-                            arr[d][name] = new Command();
-                            arr[d][name].help = prop.help || '';
-                            arr[d][name].args = prop.args || [''];
-                            arr[d][name].preq = prop.preq || [''];
-                            arr[d][name].perm = prop.perm || [''];
-                            arr[d][name].run = prop.run;
+                            let prop = require(`../${dir}/${obj}/${file}`);
+                            let com = file.split('.')[0];
+                            list[obj][com] = new Command(prop);
                         });
                     });
-                    resolve(arr);
+                    resolve(list);
                 }
-                catch (e) {
-                    reject(new Error(e));
-                };
+                catch (err) {
+                    console.log(err);
+                    reject(new Error(err));
+                }
             });
-        })        
+        });
     },
 
-    ReloadCommand(cmd, dir, cmds) {
+    ReloadCommand(cmd, dir, list) {
         com = cmd.join('/');
-        dir = root + dir;
+        dir = '../' + dir;
         return new Promise((resolve, reject) => {
             try {
                 delete require.cache[require.resolve(`${dir}/${com}`)];
                 let req = require(`${dir}/${com}.js`);
-                let Commands = cmds;
+                let Commands = list;
                 let prop, ret;
                 if (cmd.length == 2) {
                     prop = Commands[cmd[0]][cmd[1]];
@@ -67,19 +70,16 @@ module.exports = {
                     prop = Commands[cmd[0]];
                     ret = [cmd[0]];
                 }
-                prop.help = req.help || '';
-                prop.args = req.args || [''];
-                prop.preq = req.preq || [''];
-                prop.perm = req.perm || [''];
-                prop.run = req.run;
+                delete prop;
+                prop = new Command(req);
                 resolve(ret);
             }
-            catch (e) {
+            catch (err) {
                 reject(e);
-            }
-        }) 
+            };
+        });
     },
-    
+
     GetCommand(msg, coms, pref) {
         return new Promise((resolve, reject) => {
             let arr = msg.content.split(' ');
@@ -108,7 +108,7 @@ module.exports = {
     CheckPermissions(msg, com, conf) {
         let reply = conf.reply;
         let owner = conf.owner;
-        let aggr = conf.aggressive;
+        let peaceful = conf.peaceful;
         let chan = msg.channel;
         let member = msg.member;
         let author = msg.author;
@@ -124,18 +124,18 @@ module.exports = {
             chan.send(reply.PermsServer);
             return false;
         };
-        if (preq.contains("BotOwnerOnly") && author.id != owner) {
-            if (aggr)
+        if (preq.contains("BotOwnerOnly") && owner.contains(author.id)) {
+            if (!peaceful)
                 chan.send(reply.PermsBotOwner);
             return false;
         };
         if (preq.contains("HasElevatedPerms") && member.permissions.has(perm, true)) {
-            if (aggr)
+            if (!peaceful)
                 chan.send(reply.PermsElevatedPerms);
             return false;
         };
         if (preq.contains("ServerOwnerOnly") && auth.id != guild.ownerID) {
-            if (aggr)
+            if (!peaceful)
                 chan.send(reply.PermsServerOwner);
             return false;
         };
