@@ -17,6 +17,9 @@ class Group extends Object {
 }
 
 module.exports = {
+    Command: Command,
+    Group: Group,
+
     LoadCommands(dir) {
         return new Promise((resolve, reject) => {
             let list = {};

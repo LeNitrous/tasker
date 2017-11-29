@@ -19,6 +19,10 @@ Kokoro.LoadCommands = Handler.LoadCommands;
 Kokoro.GetCommand = Handler.GetCommand;
 Kokoro.Log = Logger;
 
+Kokoro.CommandType = {};
+Kokoro.CommandType.Command = Handler.Command;
+Kokoro.CommandType.Group = Handler.Group;
+
 Kokoro
     .on('warn', w => Logger.warn(w))
     .on('error', e => Logger.error(e))
@@ -53,9 +57,30 @@ Kokoro.on('message', msg => {
             com.run(Kokoro, msg, arg);
         })
         .catch(err => {
-            Logger.error(err);
+            Logger.error('An error has occured...');
+            console.log(err);
         });
 
     Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
         msg.author.username, msg.content.slice(Prefix.length), msg.channel.name);
 });
+
+function gracefulShutdown() {
+    logger.infoGeneric('Shutting down...')
+    Kokoro.destroy()
+        .then(() => {
+            process.exit();
+        })
+        .catch(e => {
+            Logger.error('An error has occured...');
+            console.log(e);
+        });
+};
+
+process.on('exit', () => { gracefulShutdown() });
+process.on('SIGINT', () => { gracefulShutdown() });
+process.on('SIGTERM', () => { gracefulShutdown() });
+process.on('SIGHUP', () => { gracefulShutdown() });
+process.on('SIGUSR1', () => { gracefulShutdown() });
+process.on('SIGUSR2', () => { gracefulShutdown() });
+process.on('uncaughtException', () => { gracefulShutdown() });
