@@ -66,7 +66,7 @@ Kokoro.on('message', msg => {
 });
 
 function gracefulShutdown() {
-    logger.infoGeneric('Shutting down...')
+    Logger.infoGeneric('Shutting down...')
     Kokoro.destroy()
         .then(() => {
             process.exit();

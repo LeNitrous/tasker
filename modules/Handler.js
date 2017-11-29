@@ -127,7 +127,7 @@ module.exports = {
             chan.send(reply.PermsServer);
             return false;
         };
-        if (preq.contains("BotOwnerOnly") && owner.contains(author.id)) {
+        if (preq.contains("BotOwnerOnly") && !owner.contains(author.id.toString())) {
             if (!peaceful)
                 chan.send(reply.PermsBotOwner);
             return false;

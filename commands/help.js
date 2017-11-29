@@ -22,7 +22,7 @@ module.exports = {
         else if (args.length == 1) {
             if (Commands[args[0]] instanceof Command) {
                 if (!bot.CheckPermissions(msg, Commands[args[0]], Config))
-                    return msg.author.send(Config.SysDisallow + 'You have no permission to view this command');
+                    return;
                 var com = Commands[args[0]];
                 var name = args[0];
                 helpMenu.push(`# ${com.name}\n\t- Help: ${com.help}\n\t- Usage: ${Config.prefix}${name}`);
@@ -39,7 +39,7 @@ module.exports = {
         else if (args.length == 2) {
             if (Commands.hasOwnProperty(args[0])) {
                 if (!bot.CheckPermissions(msg, Commands[args[0]][args[1]], Config))
-                    return msg.author.send(Config.SysDisallow + 'You have no permission to view this command');
+                    return;
                 var com = Commands[args[0]][args[1]];
                 var name = args.join(' ');
                 helpMenu.push(`# ${com.name}\n\t- Help: ${com.help}\n\t- Usage: ${Config.prefix}${name}`);
