@@ -14,14 +14,14 @@ module.exports = {
             helpMenu.push('# Commands:')
             for (var prop in Commands) {
                 if (Commands.hasOwnProperty(prop)) {
-                    if (bot.CheckPermissions(msg, Commands[prop], Config))
+                    if (bot.CheckPermissions(msg, Commands[prop], Config, false))
                         helpMenu.push(`\t- ${prop}`);
                 };
             };
         }
         else if (args.length == 1) {
             if (Commands[args[0]] instanceof Command) {
-                if (!bot.CheckPermissions(msg, Commands[args[0]], Config))
+                if (!bot.CheckPermissions(msg, Commands[args[0]], Config, false))
                     return;
                 var com = Commands[args[0]];
                 var name = args[0];
@@ -30,7 +30,7 @@ module.exports = {
             else if (Commands[args[0]] instanceof Group) {
                 for (var prop in Commands[args[0]]) {
                     if (Commands[args[0]].hasOwnProperty(prop)) {
-                        if (bot.CheckPermissions(msg, Commands[prop], Config))
+                        if (bot.CheckPermissions(msg, Commands[prop], Config, false))
                             helpMenu.push(`\t- ${prop}`);
                     };
                 };
@@ -38,7 +38,7 @@ module.exports = {
         }
         else if (args.length == 2) {
             if (Commands.hasOwnProperty(args[0])) {
-                if (!bot.CheckPermissions(msg, Commands[args[0]][args[1]], Config))
+                if (!bot.CheckPermissions(msg, Commands[args[0]][args[1]], Config, false))
                     return;
                 var com = Commands[args[0]][args[1]];
                 var name = args.join(' ');

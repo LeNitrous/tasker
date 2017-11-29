@@ -108,7 +108,8 @@ module.exports = {
         }); 
     },
 
-    CheckPermissions(msg, com, conf) {
+    CheckPermissions(msg, com, conf, shouldSend) {
+        shouldSend = shouldSend || true;
         let reply = conf.reply;
         let owner = conf.owner;
         let peaceful = conf.peaceful;
@@ -120,26 +121,26 @@ module.exports = {
         let perm = com.perm;
     
         if (preq.contains("DMChatOnly") && chan.guild != undefined) {
-            chan.send(reply.PermsDMChat);
+            if (shouldSend) chan.send(reply.PermsDMChat);
             return false;
         };
         if (preq.contains("ServerOnly") && chan.guild == undefined) {
-            chan.send(reply.PermsServer);
+            if (shouldSend) chan.send(reply.PermsServer);
             return false;
         };
         if (preq.contains("BotOwnerOnly") && !owner.contains(author.id.toString())) {
             if (!peaceful)
-                chan.send(reply.PermsBotOwner);
+                if (shouldSend) chan.send(reply.PermsBotOwner);
             return false;
         };
         if (preq.contains("HasElevatedPerms") && member.permissions.has(perm, true)) {
             if (!peaceful)
-                chan.send(reply.PermsElevatedPerms);
+                if (shouldSend) chan.send(reply.PermsElevatedPerms);
             return false;
         };
         if (preq.contains("ServerOwnerOnly") && auth.id != guild.ownerID) {
             if (!peaceful)
-                chan.send(reply.PermsServerOwner);
+                if (shouldSend) chan.send(reply.PermsServerOwner);
             return false;
         };
     
