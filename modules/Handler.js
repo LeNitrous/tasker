@@ -109,7 +109,6 @@ module.exports = {
     },
 
     CheckPermissions(msg, com, conf, shouldSend) {
-        shouldSend = shouldSend || true;
         let reply = conf.reply;
         let owner = conf.owner;
         let peaceful = conf.peaceful;
@@ -121,7 +120,7 @@ module.exports = {
         let perm = com.perm;
     
         if (preq.contains("DMChatOnly") && chan.guild != undefined) {
-            if (shouldSend) chan.send(reply.PermsDMChat);
+            if (shouldSend)  chan.send(reply.PermsDMChat);
             return false;
         };
         if (preq.contains("ServerOnly") && chan.guild == undefined) {

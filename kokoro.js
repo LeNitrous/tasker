@@ -51,7 +51,7 @@ Kokoro.on('message', msg => {
         .then(obj => {
             let com = obj[0];
             let arg = obj[1];
-            if (!Kokoro.CheckPermissions(msg, com, Kokoro.Config)) return;
+            if (!Kokoro.CheckPermissions(msg, com, Kokoro.Config, true)) return;
             if (!com.run)
                 return Logger.warn('Command has no run action set!');
             com.run(Kokoro, msg, arg);
