@@ -23,6 +23,8 @@ Kokoro.CommandType = {};
 Kokoro.CommandType.Command = Handler.Command;
 Kokoro.CommandType.Group = Handler.Group;
 
+Kokoro.Replies = Kokoro.Config.reply;
+
 Kokoro
     .on('warn', w => Logger.warn(w))
     .on('error', e => Logger.error(e))
@@ -58,6 +60,7 @@ Kokoro.on('message', msg => {
         })
         .catch(err => {
             Logger.error('An error has occured...');
+            msg.channel.send(Kokoro.Replies.SysError.replace('{0}', err));
             console.log(err);
         });
 
@@ -79,8 +82,4 @@ function gracefulShutdown() {
 
 process.on('exit', () => { gracefulShutdown() });
 process.on('SIGINT', () => { gracefulShutdown() });
-process.on('SIGTERM', () => { gracefulShutdown() });
-process.on('SIGHUP', () => { gracefulShutdown() });
-process.on('SIGUSR1', () => { gracefulShutdown() });
-process.on('SIGUSR2', () => { gracefulShutdown() });
 process.on('uncaughtException', () => { gracefulShutdown() });

@@ -16,7 +16,7 @@ const DefaultConfig = {
         PermsBotOwner: "🚫 » You don't have permission to use this command.",
         PermsElevatedPerms: "🚫 » You don't have permission to use this command.",
         PermsServerOwner: "🚫 » You don't have permission to use this command.",
-        SysError: "💢 » An error has occured!\n```{0}```",
+        SysError: "💢 » An error has occured!\n```\n{0}\n```",
         SysReload: "🔁 » Reloaded `{0}` successfully.",
         SysReloadNotFound: "⚠️ » `{0}` doesn't exist",
         SysStatusBusy: "Reloading!",
