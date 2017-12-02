@@ -57,15 +57,14 @@ Kokoro.on('message', msg => {
             if (!com.run)
                 return Logger.warn('Command has no run action set!');
             com.run(Kokoro, msg, arg);
+            Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
+                msg.author.username, msg.content.slice(Prefix.length), msg.channel.name);
         })
         .catch(err => {
-            Logger.error('An error has occured...');
+            if (err == null) return;
             msg.channel.send(Kokoro.Replies.SysError.replace('{0}', err));
             console.log(err);
         });
-
-    Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
-        msg.author.username, msg.content.slice(Prefix.length), msg.channel.name);
 });
 
 function gracefulShutdown() {

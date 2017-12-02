@@ -88,10 +88,11 @@ module.exports = {
             let arr = msg.content.split(' ');
             let arg1, arg2, args, cmd, par;
             arg1 = arr.shift().slice(pref.length);
-            if (!coms.hasOwnProperty(arg1)) reject();
+            if (!coms.hasOwnProperty(arg1)) reject(null);
             try {
                 if (coms[arg1] instanceof Group) {
                     arg2 = arr.shift();
+                    if (!coms.hasOwnProperty(arg2)) reject(null);
                     args = arr;
                     par = coms[arg1]
                     cmd = coms[arg1][arg2];
@@ -103,7 +104,7 @@ module.exports = {
                 resolve([cmd, args, par]);
             }
             catch (e) {
-                reject(new Error('Caught Command Expection.\n' + e));
+                reject(new Error(e));
             }
         }); 
     },
