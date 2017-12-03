@@ -92,7 +92,7 @@ module.exports = {
             try {
                 if (coms[arg1] instanceof Group) {
                     arg2 = arr.shift();
-                    if (!coms.hasOwnProperty(arg2)) reject(null);
+                    if (!coms[arg1].hasOwnProperty(arg2)) reject(null);
                     args = arr;
                     par = coms[arg1]
                     cmd = coms[arg1][arg2];
