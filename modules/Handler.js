@@ -10,9 +10,12 @@ class Command {
     }
 }
 
-class Group extends Object {
-    constructor() {
-        super();
+class Group {
+    constructor(data) {
+        this.name = data.name || 'unnamed';
+        this.desc = data.desc || '';
+        this.preq = [];
+        this.perm = [];
     }
 }
 
@@ -38,12 +41,16 @@ module.exports = {
                     });
 
                     folders.forEach(obj => {
-                        list[obj] = new Group();
+                        let conf = require(`../${dir}/${obj}/${obj}.json`);
+                        list[obj] = new Group(conf);
                         let files = fs.readdirSync(`${dir}/${obj}`).filter(file => { return fs.lstatSync(`${dir}/${obj}/${file}`).isFile() });
+                        files = files.filter(obj => { return obj.endsWith('.js') });
                         files.forEach(file => {
                             let prop = require(`../${dir}/${obj}/${file}`);
                             let com = file.split('.')[0];
                             list[obj][com] = new Command(prop);
+                            list[obj].preq.push.apply(list[obj].preq, prop.preq);
+                            list[obj].perm.push.apply(list[obj].perm, prop.perm);
                         });
                     });
                     resolve(list);

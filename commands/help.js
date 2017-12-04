@@ -28,10 +28,12 @@ module.exports = {
                 helpMenu.push(`# ${com.name}\n\t- Help: ${com.help}\n\t- Usage: ${Config.prefix}${name}`);
             }
             else if (Commands[args[0]] instanceof Group) {
+                helpMenu.push(`# ${Commands[args[0]].name} Commands:`)
                 for (var prop in Commands[args[0]]) {
                     if (Commands[args[0]].hasOwnProperty(prop)) {
-                        if (bot.CheckPermissions(msg, Commands[prop], Config, false))
-                            helpMenu.push(`\t- ${prop}`);
+                        if (Commands[args[0]][prop] instanceof Command)
+                            if (bot.CheckPermissions(msg, Commands[args[0]][prop], Config, false))
+                                helpMenu.push(`\t- ${prop}`);
                     };
                 };
             };
@@ -46,7 +48,7 @@ module.exports = {
             };
         };
         if (helpMenu.length == 0)
-            return;
+            throw null;
         else
             msg.author.send(helpMenu.join('\n'), {code: 'md'});
     }
