@@ -140,15 +140,21 @@ module.exports = {
                 if (shouldSend) chan.send(reply.PermsBotOwner);
             return false;
         };
-        if (preq.contains("HasElevatedPerms") && member.permissions.has(perm, true)) {
-            if (!peaceful)
-                if (shouldSend) chan.send(reply.PermsElevatedPerms);
-            return false;
+        if (preq.contains("HasElevatedPerms")) {
+            if (guild)
+                if (member.permissions.has(perm, true)) {
+                    if (!peaceful)
+                        if (shouldSend) chan.send(reply.PermsElevatedPerms);
+                    return false;
+                };
         };
-        if (preq.contains("ServerOwnerOnly") && auth.id != guild.ownerID) {
-            if (!peaceful)
-                if (shouldSend) chan.send(reply.PermsServerOwner);
-            return false;
+        if (preq.contains("ServerOwnerOnly")) {
+            if (guild)
+                if (author.id != guild.ownerID) {
+                    if (!peaceful)
+                        if (shouldSend) chan.send(reply.PermsServerOwner);
+                        return false;
+                };
         };
     
         return true;        

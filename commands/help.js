@@ -11,13 +11,14 @@ module.exports = {
         var helpMenu = [];
 
         if (args.length < 1) {
-            helpMenu.push('# Commands:')
+            helpMenu.push('# General Commands:')
             for (var prop in Commands) {
                 if (Commands.hasOwnProperty(prop)) {
                     if (bot.CheckPermissions(msg, Commands[prop], Config, false))
                         helpMenu.push(`\t- ${prop}`);
                 };
             };
+            helpMenu.push(`- Prefix: "${Config.prefix}"`);
         }
         else if (args.length == 1) {
             if (Commands[args[0]] instanceof Command) {
@@ -28,7 +29,8 @@ module.exports = {
                 helpMenu.push(`# ${com.name}\n\t- Help: ${com.help}\n\t- Usage: ${Config.prefix}${name}`);
             }
             else if (Commands[args[0]] instanceof Group) {
-                helpMenu.push(`# ${Commands[args[0]].name} Commands:`)
+                helpMenu.push(`# ${Commands[args[0]].name} Commands:`);
+                helpMenu.push(`- ${Commands[args[0]].desc}`);
                 for (var prop in Commands[args[0]]) {
                     if (Commands[args[0]].hasOwnProperty(prop)) {
                         if (Commands[args[0]][prop] instanceof Command)
@@ -36,6 +38,7 @@ module.exports = {
                                 helpMenu.push(`\t- ${prop}`);
                     };
                 };
+                helpMenu.push(`- ${Config.prefix}${args[0]} <command>`);
             };
         }
         else if (args.length == 2) {

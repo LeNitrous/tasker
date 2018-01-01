@@ -19,11 +19,7 @@ const DefaultConfig = {
         SysError: "💢 » An error has occured!\n```\n{0}\n```",
         SysReload: "🔁 » Reloaded `{0}` successfully.",
         SysReloadNotFound: "⚠️ » `{0}` doesn't exist",
-        SysStatusBusy: "Reloading!",
-        SysWarn: "⚠️ » ",
-        SysDisallow: "🚫 » ",
-        SysYes: "⭕️ » ",
-        SysNo: "❌ » "
+        SysStatusBusy: "Reloading!"
     }
 };
 

@@ -23,7 +23,9 @@ Kokoro.CommandType = {};
 Kokoro.CommandType.Command = Handler.Command;
 Kokoro.CommandType.Group = Handler.Group;
 
-Kokoro.Replies = Kokoro.Config.reply;
+Kokoro.Reply = (icon, message) => {
+    return `${icon} » ${message}`;
+};
 
 Kokoro
     .on('warn', w => Logger.warn(w))
@@ -62,7 +64,10 @@ Kokoro.on('message', msg => {
         })
         .catch(err => {
             if (err == null) return;
-            msg.channel.send(Kokoro.Replies.SysError.replace('{0}', err));
+            msg.channel.send(Kokoro.Config.reply.SysErrorMin);
+            Kokoro.Config.owner.forEach(id => {
+                Kokoro.users.findKey('id', id).send(Kokoro.Config.reply.SysError.replace('{0}', err));
+            });
             console.log(err);
         });
 });
