@@ -1,79 +1,82 @@
 const Discord = require('discord.js');
-const Handler = require('./modules/Handler.js');
-const Logger = require('./modules/Logger.js');
-const Setup= require('./setup.js');
+const Shell = require('shelljs');
+const fs = require('fs');
 
-Logger.infoGeneric('Initializing...')
+const Logger = require('./modules/Logger.js');
+const Handler = require('./modules/Handler.js');
+const Setup = require('./setup.js');
+
 Setup.init();
+Logger.infoGeneric('Initializing...');
 
 const Kokoro = new Discord.Client();
-
-Kokoro.Commands = {};
-Kokoro.Config = require('./config.json');
-Kokoro.Data = './data';
-
-Kokoro.ShouldRunCommands = true;
-Kokoro.CheckPermissions = Handler.CheckPermissions;
-Kokoro.ReloadCommand = Handler.ReloadCommand;
-Kokoro.LoadCommands = Handler.LoadCommands;
-Kokoro.GetCommand = Handler.GetCommand;
-Kokoro.Log = Logger;
-
-Kokoro.CommandType = {};
-Kokoro.CommandType.Command = Handler.Command;
-Kokoro.CommandType.Group = Handler.Group;
-
-Kokoro.Reply = (icon, message) => {
-    return `${icon} » ${message}`;
-};
 
 Kokoro
     .on('warn', w => Logger.warn(w))
     .on('error', e => Logger.error(e))
     .on('disconnect', () => Logger.error('CLIENT DISCONNECTED', 'WARN'))
+    .on('reconnecting', () => Logger.warn('RECONNECTING CLIENT'))
+    .on('resume', () => Logger.info('CLIENT RECONNECTED'))
     .on('ready', () => Logger.info('CLIENT CONNECTED'));
 
-Kokoro.LoadCommands('./commands')
-    .then(com => {
-        Kokoro.Commands = com;
-        Kokoro.login(Kokoro.Config.token);
+Kokoro.Bot = {
+    commands: {},
+    config: require('./config.json'),
+    logger: Logger,
+    help: Handler.help,
+    shutdown: shutdown,
+    restart: restart,
+    error: Handler.Error,
+    send: (msg, icon, content) => {
+        return msg.send(`${icon} » ${content}`);
+    }
+};
+
+Kokoro.Handler = {
+    checkPermissions: Handler.checkPermissions,
+    loadCommands: Handler.loadCommands,
+    getCommand: Handler.getCommand
+};
+
+Kokoro.Handler.loadCommands('./commands')
+    .then(cmd => {
+        Kokoro.Bot.commands = cmd;
+        Kokoro.login(Kokoro.Bot.config.token);
     })
     .catch(err => {
-        Logger.error(err);
+        Logger.error(err.stack);
     });
 
 Kokoro.on('message', msg => {
-    if (!Kokoro.ShouldRunCommands) return;
     if (msg.author.bot) return;
 
-    let Prefix = Kokoro.Config.prefix;
-    let Commands = Kokoro.Commands;
+    const cfg = Kokoro.Bot.config;
+    const cmd = Kokoro.Bot.commands;
 
-    if (!msg.content.startsWith(Prefix)) return;
+    if (!msg.content.startsWith(cfg.prefix)) return;
 
-    Kokoro.GetCommand(msg, Commands, Prefix)
+    Kokoro.Handler.getCommand(msg, cmd, cfg.prefix)
         .then(obj => {
-            let com = obj[0];
-            let arg = obj[1];
-            if (!Kokoro.CheckPermissions(msg, com, Kokoro.Config, true)) return;
-            if (!com.run)
+            if (!Kokoro.Handler.checkPermissions(msg, obj.cmd, cfg, true)) return;
+            if (!obj.cmd.run)
                 return Logger.warn('Command has no run action set!');
-            com.run(Kokoro, msg, arg);
             Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
-                msg.author.username, msg.content.slice(Prefix.length), msg.channel.name);
+                msg.author.username, msg.content.slice(cfg.prefix.length), msg.channel.name);
+            obj.cmd.run(Kokoro, msg, obj.arg);
         })
         .catch(err => {
             if (err == null) return;
-            msg.channel.send(Kokoro.Config.reply.SysErrorMin);
-            Kokoro.Config.owner.forEach(id => {
-                Kokoro.users.findKey('id', id).send(Kokoro.Config.reply.SysError.replace('{0}', err));
+            msg.channel.send(Kokoro.Bot.config.reply.SysErrorMin);
+            var out = `An error occured in "${err.source}" where:\n${err.stack}`;
+            fs.writeFile("./error.txt", `Last exception occured at ${new Date()}\n${out}`, (err) => {
+                if (err) return console.log(err);
             });
-            console.log(err);
+            Logger.error(out);
         });
 });
 
-function gracefulShutdown() {
-    Logger.infoGeneric('Shutting down...')
+function shutdown() {
+    Logger.warn('Shutting down');
     Kokoro.destroy()
         .then(() => {
             process.exit();
@@ -84,6 +87,29 @@ function gracefulShutdown() {
         });
 };
 
-process.on('exit', () => { gracefulShutdown() });
-process.on('SIGINT', () => { gracefulShutdown() });
-process.on('uncaughtException', () => { gracefulShutdown() });
+function restart() {
+    Logger.warn('Restarting');
+    Kokoro.destroy()
+        .then(() => {
+            require("child_process").spawn(process.argv.shift(),
+                process.argv, {
+                    cwd: process.cwd(),
+                    detached: true,
+                    stdio: "inherit"
+                });
+            process.exit();
+        })
+        .catch(e => {
+            Logger.error('An error has occured...');
+            console.log(e);
+        });
+};
+
+process.on('SIGINT', () => { shutdown() });
+process.on('SIGUSR1', () => { shutdown() });
+process.on('SIGUSR2', () => { shutdown() });
+
+process.on('uncaughtException', (err) => { 
+    Logger.error('An error has occured...');
+    console.log(err);    
+});

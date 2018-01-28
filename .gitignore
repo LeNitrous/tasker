@@ -4,14 +4,15 @@
 # NodeJS
 node_modules/
 
-# Private Modules
+# Private
 modules/node-dori
 commands/*
 config.json
-test.js
+error.txt
 
 # Exclusions
 !commands/example.js
-!commands/reload.js
+!commands/bot/reload.js
 !commands/help.js
-!commands/shutdown.js
+!commands/bot/shutdown.js
+!commands/bot/logs.js

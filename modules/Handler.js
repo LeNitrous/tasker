@@ -2,10 +2,11 @@ const fs = require('fs');
 
 class Command {
     constructor(data) {
-        this.name = data.name || 'unnamed';
+        this.name = data.name;
+        this.desc = data.desc || '';
         this.help = data.help || '';
-        this.preq = data.preq || [''];
-        this.perm = data.perm || [''];
+        this.preq = data.preq || [];
+        this.perm = data.perm || [];
         this.run = data.run;
     }
 }
@@ -19,149 +20,200 @@ class Group {
     }
 }
 
+class ExecutionError extends Error {
+    constructor(src, msg) {
+        super(msg);
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
+        this.source = src;
+    }
+};
+
 module.exports = {
     Command: Command,
     Group: Group,
-
-    LoadCommands(dir) {
+    Error: ExecutionError,
+    loadCommands: (dir) => {
         return new Promise((resolve, reject) => {
-            let list = {};
-            fs.readdir(dir, (err, file) => {
-                if (err) reject(new Error(e));
+            var set = {};
+            fs.readdir(dir, (err, item) => {
+                if (err) reject(new Error(err));
                 try {
-                    let files, folders;
-                    files = file.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isFile() });
-                    files = files.filter(obj => { return obj.endsWith('.js') });
-                    folders = file.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isDirectory() });
-
-                    files.forEach(obj => {
-                        let prop = require(`../${dir}/${obj}`);
-                        let com = obj.split('.')[0];
-                        list[com] = new Command(prop);
+                    var com = item.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isFile() })
+                        .filter(obj => { return obj.endsWith('.js') });
+                    var grp = item.filter(obj => { return fs.lstatSync(`${dir}/${obj}`).isDirectory() });
+                    com.forEach(obj => {
+                        var prop = require(`../${dir}/${obj}`);
+                        var name = obj.split('.').shift();
+                        set[name] = new Command(prop)
                     });
-
-                    folders.forEach(obj => {
-                        let conf = require(`../${dir}/${obj}/${obj}.json`);
-                        list[obj] = new Group(conf);
-                        let files = fs.readdirSync(`${dir}/${obj}`).filter(file => { return fs.lstatSync(`${dir}/${obj}/${file}`).isFile() });
-                        files = files.filter(obj => { return obj.endsWith('.js') });
-                        files.forEach(file => {
-                            let prop = require(`../${dir}/${obj}/${file}`);
-                            let com = file.split('.')[0];
-                            list[obj][com] = new Command(prop);
-                            list[obj].preq.push.apply(list[obj].preq, prop.preq);
-                            list[obj].perm.push.apply(list[obj].perm, prop.perm);
+                    grp.forEach(group => {
+                        let opt = require(`../${dir}/${group}/${group}.json`);
+                        set[group] = new Group(opt);
+                        fs.readdir(`${dir}/${group}`, (err, item) => {
+                            if (err) reject(new Error(err));
+                            var com = item.filter(obj => { return obj.endsWith('.js') });
+                            com.forEach(obj => {
+                                var prop = require(`../${dir}/${group}/${obj}`);
+                                var name = obj.split('.').shift();
+                                set[group][name] = new Command(prop);
+                                set[group].preq.push.apply(set[group].preq, prop.preq);
+                                set[group].perm.push.apply(set[group].perm, prop.perm);
+                            });
                         });
                     });
-                    resolve(list);
+                    resolve(set);
                 }
                 catch (err) {
-                    console.log(err);
                     reject(new Error(err));
-                }
-            });
-        });
+                };
+            })
+        })
     },
-
-    ReloadCommand(cmd, dir, list) {
-        com = cmd.join('/');
-        dir = '../' + dir;
+    getCommand: (msg, com, pre) => {
         return new Promise((resolve, reject) => {
-            try {
-                delete require.cache[require.resolve(`${dir}/${com}`)];
-                let req = require(`${dir}/${com}.js`);
-                let Commands = list;
-                let prop, ret;
-                if (cmd.length == 2) {
-                    prop = Commands[cmd[0]][cmd[1]];
-                    ret = [cmd[0], cmd[1]];
+            var args = msg.content.split(' ');
+            var arg1 = args.shift().slice(pre.length);
+            if (com.hasOwnProperty(arg1)) {
+                try {
+                    if (com[arg1] instanceof Group) {
+                        var arg2 = args.shift();
+                        if (com[arg1].hasOwnProperty(arg2))
+                            cmd = com[arg1][arg2]
+                    }
+                    else if (com[arg1] instanceof Command) {
+                        cmd = com[arg1];
+                    };
+                    resolve({
+                        cmd: cmd,
+                        arg: args
+                    });
                 }
-                else {
-                    prop = Commands[cmd[0]];
-                    ret = [cmd[0]];
-                }
-                delete prop;
-                prop = new Command(req);
-                resolve(ret);
-            }
-            catch (err) {
-                reject(e);
+                catch (err) {
+                    reject(new Error(err));
+                };
             };
-        });
+        })
     },
-
-    GetCommand(msg, coms, pref) {
-        return new Promise((resolve, reject) => {
-            let arr = msg.content.split(' ');
-            let arg1, arg2, args, cmd, par;
-            arg1 = arr.shift().slice(pref.length);
-            if (!coms.hasOwnProperty(arg1)) reject(null);
-            try {
-                if (coms[arg1] instanceof Group) {
-                    arg2 = arr.shift();
-                    if (!coms[arg1].hasOwnProperty(arg2)) reject(null);
-                    args = arr;
-                    par = coms[arg1]
-                    cmd = coms[arg1][arg2];
-                }
-                else if (coms[arg1] instanceof Command) {
-                    args = arr;
-                    cmd = coms[arg1];
-                }
-                resolve([cmd, args, par]);
-            }
-            catch (e) {
-                reject(new Error(e));
-            }
-        }); 
-    },
-
-    CheckPermissions(msg, com, conf, shouldSend) {
-        let reply = conf.reply;
-        let owner = conf.owner;
-        let peaceful = conf.peaceful;
-        let chan = msg.channel;
-        let member = msg.member;
-        let author = msg.author;
-        let guild = msg.guild;
-        let preq = com.preq;
-        let perm = com.perm;
-    
-        if (preq.contains("DMChatOnly") && chan.guild != undefined) {
-            if (shouldSend)  chan.send(reply.PermsDMChat);
+    checkPermissions: (msg, cmd, cfg, shouldSend) => {
+        var preq = cmd.preq;
+        var perm = cmd.perm;
+        if (preq.contains("DMChatOnly") && msg.channel.guild != undefined) {
+            if (shouldSend) msg.channel.send(cfg.reply.PermsDMChat);
             return false;
         };
-        if (preq.contains("ServerOnly") && chan.guild == undefined) {
-            if (shouldSend) chan.send(reply.PermsServer);
+        if (preq.contains("ServerOnly") && msg.channel.guild == undefined) {
+            if (shouldSend) msg.channel.send(cfg.reply.PermsServer);
             return false;
         };
-        if (preq.contains("BotOwnerOnly") && !owner.contains(author.id)) {
-            if (!peaceful)
-                if (shouldSend) chan.send(reply.PermsBotOwner);
+        if (preq.contains("BotOwnerOnly") && !cfg.owner.contains(author.id)) {
+            if (!cfg.peaceful)
+                if (shouldSend) msg.channel.send(cfg.reply.PermsBotOwner);
             return false;
         };
         if (preq.contains("HasElevatedPerms")) {
-            if (guild)
-                if (member.permissions.has(perm, true)) {
+            if (msg.guild)
+                if (msg.member.permissions.has(perm, true)) {
                     if (!peaceful)
                         if (shouldSend) chan.send(reply.PermsElevatedPerms);
                     return false;
                 };
         };
         if (preq.contains("ServerOwnerOnly")) {
-            if (guild)
-                if (author.id != guild.ownerID) {
+            if (msg.guild)
+                if (msg.author.id != msg.guild.ownerID) {
                     if (!peaceful)
                         if (shouldSend) chan.send(reply.PermsServerOwner);
-                        return false;
+                    return false;
                 };
         };
-    
-        return true;        
+        if (preq.contains("UseWhitelist") && chan.guild != undefined) {
+            if (!cfg.whitelist.contains(msg.guild.id))
+                return false;
+        };
+        return true;
+    },
+    help(bot, msg, args) {
+        const Commands = bot.Bot.commands;
+        const Config = bot.Bot.config;
+
+        var helpMenu = [];
+        var ignoreProps = ['name', 'desc', 'preq', 'perm'];
+
+        const footer = `\n- Type "${Config.prefix}help <command>" for more details.`;
+
+        if (args.length < 1) {
+            helpMenu.push(`# ${bot.user.username} Commands:`)
+            for (var prop in Commands) {
+                if (Commands.hasOwnProperty(prop) && bot.Handler.checkPermissions(msg, Commands[prop], Config, false)) {
+                    if (Commands[prop] instanceof Command)
+                        helpMenu.push(`> ${padString(prop, 15)}\t${Commands[prop].desc}`);
+                    else if (Commands[prop] instanceof Group) {
+                        helpMenu.push(``);
+                        helpMenu.push(`# ${Commands[prop].name}:`);
+                        for (var innerProp in Commands[prop]) {
+                            if (Commands[prop][innerProp] instanceof Command)
+                                helpMenu.push(`> ${padString(`${prop} ${innerProp}`, 15)}\t${Commands[prop][innerProp].desc}`);
+                        }
+                    }
+                }
+            }
+            helpMenu.push(footer);
+        }
+        else if (args.length == 1) {
+            if (Commands[args[0]] instanceof Command) {
+                if (!bot.Handler.checkPermissions(msg, Commands[args[0]], Config, false))
+                    return;
+                var com = Commands[args[0]];
+                var name = args[0];
+                var help = (com.help != '') ? com.help : com.desc;
+                helpMenu.push(`# ${com.name}\n- Help: ${help}\n\n- Usage: ${Config.prefix}${name}`);
+            }
+            else if (Commands[args[0]] instanceof Group) {
+                helpMenu.push(`# ${Commands[args[0]].name}:`);
+                for (var prop in Commands[args[0]]) {
+                    if (Commands[args[0]].hasOwnProperty(prop)) {
+                        if (Commands[args[0]][prop] instanceof Command)
+                            if (bot.Handler.checkPermissions(msg, Commands[args[0]][prop], Config, false))
+                                helpMenu.push(`> ${padString(`${args[0]} ${prop}`, 15)}\t${Commands[args[0]][prop].desc}`);
+                    };
+                };
+                helpMenu.push(footer);
+            };
+        }
+        else if (args.length == 2) {
+            if (Commands.hasOwnProperty(args[0])) {
+                if (!bot.Handler.checkPermissions(msg, Commands[args[0]][args[1]], Config, false))
+                    return;
+                var com = Commands[args[0]][args[1]];
+                var name = args.join(' ');
+                var help = (com.help != '') ? com.help : com.desc;
+                helpMenu.push(`# ${com.name}\n- Help: ${help}\n\n- Usage: ${Config.prefix}${name}`);
+            };
+        };
+
+        var helpText = helpMenu.join('\n');
+        if (helpText.length > 1950) {
+            var result = Discord.Util.splitMessage(helpText);
+            result.forEach(block => {
+                msg.channel.send(block, {code: 'md'});
+            });
+        }
+        else
+            msg.author.send(helpText, {code: 'md'});
     }
+}
+
+function padString(string, padLength) {
+    if (string.length > padLength) throw new Error('Invalid size.');
+    var num = padLength - string.length;
+    for (var i = 0; i < num; i++) {
+        string += ' ';
+    };
+    return string;
 };
 
-Array.prototype.contains = function ( needle ) {
+Array.prototype.contains = (needle) => {
     for (i in this) {
        if (this[i] == needle) return true;
     }

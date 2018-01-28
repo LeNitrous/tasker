@@ -31,10 +31,6 @@ module.exports = {
             Logger.warn('Commands directory doesn\'t exist! Creating one...')
             fs.mkdirSync(DirCommands);
         };
-        if (!fs.existsSync(DirData)) {
-            logger.warn('Data directory doesn\'t exist! Creating one...');
-            fs.mkdirSync(DirData);         
-        };
         if (!fs.existsSync(DirConfig)) {
             Logger.warn('Config file doesn\'t exist! Creating one...');
             fs.writeFileSync(DirConfig, JSON.stringify(DefaultConfig));

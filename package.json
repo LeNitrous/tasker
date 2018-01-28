@@ -9,6 +9,7 @@
     "discord.js": "^11.2.1",
     "moment": "^2.19.2",
     "moment-timezone": "^0.5.14",
+    "shelljs": "^0.8.1",
     "superagent": "^3.6.0",
     "sync-request": "^4.1.0"
   },
