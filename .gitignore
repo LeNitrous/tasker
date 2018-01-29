@@ -8,11 +8,9 @@ node_modules/
 modules/node-dori
 commands/*
 config.json
-error.txt
+error.log
 
 # Exclusions
 !commands/example.js
-!commands/bot/reload.js
 !commands/help.js
-!commands/bot/shutdown.js
-!commands/bot/logs.js
+!commands/bot/*

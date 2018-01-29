@@ -55,6 +55,8 @@ Kokoro.on('message', msg => {
 
     if (!msg.content.startsWith(cfg.prefix)) return;
 
+    msg.channel.startTyping();
+
     Kokoro.Handler.getCommand(msg, cmd, cfg.prefix)
         .then(obj => {
             if (!Kokoro.Handler.checkPermissions(msg, obj.cmd, cfg, true)) return;
@@ -63,12 +65,13 @@ Kokoro.on('message', msg => {
             Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
                 msg.author.username, msg.content.slice(cfg.prefix.length), msg.channel.name);
             obj.cmd.run(Kokoro, msg, obj.arg);
+            msg.channel.stopTyping(true);
         })
         .catch(err => {
             if (err == null) return;
             msg.channel.send(Kokoro.Bot.config.reply.SysErrorMin);
             var out = `An error occured in "${err.source}" where:\n${err.stack}`;
-            fs.writeFile("./error.txt", `Last exception occured at ${new Date()}\n${out}`, (err) => {
+            fs.writeFile("./error.log", `Last exception occured at ${new Date()}\n${out}`, (err) => {
                 if (err) return console.log(err);
             });
             Logger.error(out);
