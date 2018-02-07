@@ -26,7 +26,7 @@ Kokoro.Bot = {
     help: Handler.help,
     shutdown: shutdown,
     restart: restart,
-    error: Handler.Error,
+    Error: Handler.Error,
     send: (msg, icon, content) => {
         return msg.send(`${icon} » ${content}`);
     }
@@ -55,13 +55,12 @@ Kokoro.on('message', msg => {
 
     if (!msg.content.startsWith(cfg.prefix)) return;
 
-    msg.channel.startTyping();
-
     Kokoro.Handler.getCommand(msg, cmd, cfg.prefix)
         .then(obj => {
             if (!Kokoro.Handler.checkPermissions(msg, obj.cmd, cfg, true)) return;
             if (!obj.cmd.run)
                 return Logger.warn('Command has no run action set!');
+            msg.channel.startTyping();
             Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
                 msg.author.username, msg.content.slice(cfg.prefix.length), msg.channel.name);
             obj.cmd.run(Kokoro, msg, obj.arg);

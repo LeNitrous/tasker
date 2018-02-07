@@ -74,6 +74,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             var args = msg.content.split(' ');
             var arg1 = args.shift().slice(pre.length);
+            var cmd;
             if (com.hasOwnProperty(arg1)) {
                 try {
                     if (com[arg1] instanceof Group) {
@@ -84,13 +85,14 @@ module.exports = {
                     else if (com[arg1] instanceof Command) {
                         cmd = com[arg1];
                     };
+                    if (cmd == undefined) return;
                     resolve({
                         cmd: cmd,
                         arg: args
                     });
                 }
                 catch (err) {
-                    reject(new Error(err));
+                    reject(new ExecutionError("CommandHandler", err));
                 };
             };
         })
@@ -183,8 +185,9 @@ module.exports = {
         }
         else if (args.length == 2) {
             if (Commands.hasOwnProperty(args[0])) {
-                if (!bot.Handler.checkPermissions(msg, Commands[args[0]][args[1]], Config, false))
-                    return;
+                if (Commands[args[0]][args[1]].preq && Commands[args[0]][args[1]].perm)
+                    if (!bot.Handler.checkPermissions(msg, Commands[args[0]][args[1]], Config, false))
+                        return;
                 var com = Commands[args[0]][args[1]];
                 var name = args.join(' ');
                 var help = (com.help != '') ? com.help : com.desc;
@@ -199,7 +202,7 @@ module.exports = {
                 msg.channel.send(block, {code: 'md'});
             });
         }
-        else
+        else if (helpText.length != 0)
             msg.author.send(helpText, {code: 'md'});
     }
 }
