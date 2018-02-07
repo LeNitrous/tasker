@@ -11,6 +11,5 @@ config.json
 error.log
 
 # Exclusions
-!commands/example.js
 !commands/help.js
-!commands/bot/*
+!commands/bot/

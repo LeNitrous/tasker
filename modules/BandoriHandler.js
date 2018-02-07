@@ -8,6 +8,7 @@ module.exports = {
     }),
     sendCard(msg, cardArray) {
         var card = cardArray.shift();
+        card.locale = card.getLocale();
         var maxLevel, skill_header, skill_info, skill_title;
         if (card.rarity < 3)
             maxLevel = card.maxLevel
@@ -51,6 +52,9 @@ module.exports = {
             embed.addField('\u200b', `\`\`\`md\n${listCards.join('\n')}\`\`\``);
         }
         msg.channel.send({ embed });
+    },
+    sendEvent(msg, event) {
+
     }
 };
 
