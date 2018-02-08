@@ -3,6 +3,6 @@ module.exports = {
     desc: 'Update bot files from repository',
     preq: ['BotOwnerOnly'],
     run: (Kokoro, msg, args) => {
-        Kokoro.Bot.update();
+        Kokoro.Bot.update(msg);
     }
 };

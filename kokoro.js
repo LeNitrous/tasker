@@ -90,12 +90,19 @@ function shutdown() {
         });
 };
 
-function update() {
+function update(msg) {
     if (!Shell.which('git')) {
         Shell.echo('Sorry, updating requires "git" to be installed.');
         Shell.exit(1);
     }
-    Shell.exec('./scripts/update.sh');
+    Shell.exec('./scripts/update.sh', (code, stdout, stderr) => {
+        if (stdout) {
+            msg.channel.send(stdout, {code: 'md'});
+        }
+        else if (stderr) {
+            msg.channel.send(stderr, {code: 'md'});
+        }
+    });
 }
 
 function restart() {
