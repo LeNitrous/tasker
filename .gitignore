@@ -6,6 +6,7 @@ node_modules/
 
 # Private
 commands/*
+commands/gbp/
 config.json
 error.log
 

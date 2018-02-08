@@ -25,6 +25,7 @@ Kokoro.Bot = {
     logger: Logger,
     help: Handler.help,
     shutdown: shutdown,
+    update: update,
     restart: restart,
     Error: Handler.Error,
     send: (msg, icon, content) => {
@@ -88,6 +89,14 @@ function shutdown() {
             console.log(e);
         });
 };
+
+function update() {
+    if (!Shell.which('git')) {
+        Shell.echo('Sorry, updating requires "git" to be installed.');
+        Shell.exit(1);
+    }
+    Shell.exec('./scripts/update.sh');
+}
 
 function restart() {
     Logger.warn('Restarting');
