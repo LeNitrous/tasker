@@ -17,7 +17,12 @@ Kokoro
     .on('disconnect', () => Logger.error('CLIENT DISCONNECTED', 'WARN'))
     .on('reconnecting', () => Logger.warn('RECONNECTING CLIENT'))
     .on('resume', () => Logger.info('CLIENT RECONNECTED'))
-    .on('ready', () => Logger.info('CLIENT CONNECTED'));
+    .on('ready', () => {
+        Logger.info('CLIENT CONNECTED')
+        Kokoro.user.setActivity(`${Kokoro.Bot.config.prefix}help`, {
+            type: "LISTENING"
+        });
+    });
 
 Kokoro.Bot = {
     commands: {},
