@@ -65,9 +65,8 @@ module.exports = {
             });
         const embed = new Discord.RichEmbed()
             .setAuthor(event.name, event.getIcon())
-            .addField('Event Members', memberArray.join(' '))
+            .addField('Event Members', memberArray.join(' '), true)
             .addField('Event Type', caseFix(event.type), true)
-            .addField('Event Attribute', caseFix(event.attribute), true)
             .addField('Event Reward Cards', `\`\`\`md\n${cardArray.join('\n')}\`\`\``)
             .setColor(event.getColor())
             .setImage(event.image);
