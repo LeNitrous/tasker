@@ -12,7 +12,8 @@
     "moment-timezone": "^0.5.14",
     "shelljs": "^0.8.1",
     "superagent": "^3.6.0",
-    "sync-request": "^4.1.0"
+    "sync-request": "^4.1.0",
+    "unhandled-rejection": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {

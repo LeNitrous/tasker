@@ -3,8 +3,7 @@ const BandoriApi = require('./node-dori');
 
 module.exports = {
     Api: new BandoriApi({
-        region: 'jp',
-        locale: true
+        region: 'jp'
     }),
     sendCard(msg, cardArray) {
         var card = cardArray.shift();

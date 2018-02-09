@@ -13,10 +13,24 @@ const Kokoro = new Discord.Client();
 
 Kokoro
     .on('warn', w => Logger.warn(w))
-    .on('error', e => Logger.error(e))
     .on('disconnect', () => Logger.error('CLIENT DISCONNECTED', 'WARN'))
     .on('reconnecting', () => Logger.warn('RECONNECTING CLIENT'))
     .on('resume', () => Logger.info('CLIENT RECONNECTED'))
+    .on('error', event => {
+        if (event == null) return;
+        if (event.msg && event.err) {
+            Kokoro.Bot.send(event.msg.channel, "💢", "Oops! That wasn't supposed to happen");
+            var out = `An error occured in "${event.err.source}" where:\n${event.err.stack}`;
+            fs.writeFile("./error.log", `Last exception occured at ${new Date()}\n${out}`, (err) => {
+                if (err) return console.error(err);
+            });
+            Logger.error(out);
+            event.msg.channel.stopTyping(true);
+        }
+        else {
+            Logger.error(e)
+        };
+    })
     .on('ready', () => {
         Logger.info('CLIENT CONNECTED')
         Kokoro.user.setActivity(`${Kokoro.Bot.config.prefix}help`, {
@@ -73,13 +87,10 @@ Kokoro.on('message', msg => {
             msg.channel.stopTyping(true);
         })
         .catch(err => {
-            if (err == null) return;
-            msg.channel.send(Kokoro.Bot.config.reply.SysErrorMin);
-            var out = `An error occured in "${err.source}" where:\n${err.stack}`;
-            fs.writeFile("./error.log", `Last exception occured at ${new Date()}\n${out}`, (err) => {
-                if (err) return console.log(err);
+            Kokoro.emit('error', {
+                msg: msg,
+                err: err
             });
-            Logger.error(out);
         });
 });
 
