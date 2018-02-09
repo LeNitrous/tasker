@@ -6,7 +6,7 @@ module.exports = {
         region: 'jp'
     }),
     sendCard(msg, cardArray) {
-        var card = cardArray.shift();
+        var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
         card.locale = card.getLocale();
         var maxLevel, skill_header, skill_info, skill_title;
         if (card.rarity < 3)
