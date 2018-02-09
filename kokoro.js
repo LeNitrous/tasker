@@ -46,7 +46,12 @@ Kokoro.Bot = {
     shutdown: shutdown,
     update: update,
     restart: restart,
-    Error: Handler.Error,
+    Error: (msg, src, err) => {
+        Kokoro.emit('error', {
+            msg: msg,
+            err: new Handler.Error(src, err)
+        });
+    },
     send: (msg, icon, content) => {
         return msg.send(`${icon} » ${content}`);
     }

@@ -16,10 +16,7 @@ module.exports = {
                 .catch(error => {
                     if (error.name == 'EmptyResponseError')
                         return Kokoro.Bot.send(msg.channel, "❎", "There is no card with that ID");
-                    Kokoro.emit('error', {
-                        msg: msg,
-                        err: new Kokoro.Bot.Error(module.exports.name, error.message)
-                    });
+                    Kokoro.Bot.Error(msg, module.exports.name, error.message);
                 });
         }
         else {
@@ -29,11 +26,8 @@ module.exports = {
                 })
                 .catch(error => {
                     if (error.name == 'EmptyResponseError')
-                        Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
-                    Kokoro.emit('error', {
-                        msg: msg,
-                        err: new Kokoro.Bot.Error(module.exports.name, error.message)
-                    });
+                        return Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
+                    Kokoro.Bot.Error(msg, module.exports.name, error.message);
                 });
         }
     }
