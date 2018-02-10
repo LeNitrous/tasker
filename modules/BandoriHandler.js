@@ -5,10 +5,10 @@ module.exports = {
     Api: new BandoriApi({
         region: 'jp'
     }),
-    sendCard(msg, cardArray) {
+    sendCard(msg, cardArray, locale) {
         var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
-        card.locale = card.getLocale();
         var maxLevel, skill_header, skill_info, skill_title;
+        card.locale = locale;
         if (card.rarity < 3)
             maxLevel = card.maxLevel
         else
@@ -19,7 +19,7 @@ module.exports = {
                 skill_info = `${card.locale.skill.details} ${card.locale.side_skill.details}`;
             }
             else {
-                skill_header = card.locale.skill.type;
+                skill_header = caseFix(card.locale.skill.type);
                 skill_info = card.locale.skill.details;
             };
             if (card.locale.skill.name != null)
@@ -35,10 +35,10 @@ module.exports = {
         const embed = new Discord.RichEmbed()
             .setAuthor(card.toString(), card.getIcon(),
                 `https://bandori.party/cards/${card.locale.id}`)
-            .setThumbnail(card.locale.icon)
+            .setThumbnail(card.locale.icon.normal)
             .setColor(card.getColor())
             .addField("Skill Type", skill_header, true)
-            .addField("Max Power", card.parameters[maxLevel].total + 
+            .addField("Max Power", card.parameterMax.total + 
                 (card.parameterStoryBonus[0] + card.parameterStoryBonus[1]) * 3 + 
                 card.parameterTrainBonus * 3, true)
             .addField(skill_title, skill_info);
@@ -48,35 +48,53 @@ module.exports = {
                 listCards.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
             });
             listCards.length = 5;
-            embed.addField('\u200b', `\`\`\`md\n${listCards.join('\n')}\`\`\``);
+            embed.addField('Similar Cards', `\`\`\`md\n${listCards.join('\n')}\`\`\``);
         }
         msg.channel.send({ embed });
     },
-    sendEvent(msg, event) {
-        var cardArray = [];
-        var memberArray = [];
-        event.getCards()
+
+    sendCardArt(msg, cardArray, state) {
+        var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
+        console.log(card);
+        const embed = new Discord.RichEmbed()
+            .setAuthor(card.toString(), card.getIcon())
+            .setImage(card[state])
+            .setColor(card.getColor());
+        msg.channel.send({ embed });
+    },
+
+    sendMusic(msg, music) {
+        const embed = new Discord.RichEmbed()
+            .setAuthor(music.toString())
+            .setThumbnail(music.jacket)
+            .setDescription(`[Listen](${music.bgm})`);
+        msg.channel.send({ embed });
+    },
+    
+    sendEvent(msg, event, cardArray, musicArray) {
+        var stringCard = [];
+        var stringMusic = [];
+        var stringMember = [];
+        cardArray
             .forEach(elem => {
-                cardArray.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
+                stringCard.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
             });
         event.characters
             .forEach(elem => {
-                memberArray.push(emoji[elem])
+                stringMember.push(emoji[elem])
             });
         const embed = new Discord.RichEmbed()
             .setAuthor(event.name, event.getIcon())
-            .addField('Event Members', memberArray.join(' '), true)
+            .addField('Event Members', stringMember.join(' '), true)
             .addField('Event Type', caseFix(event.type), true)
-            .addField('Event Reward Cards', `\`\`\`md\n${cardArray.join('\n')}\`\`\``)
+            .addField('Event Reward Cards', `\`\`\`md\n${stringCard.join('\n')}\`\`\``)
             .setColor(event.getColor())
             .setImage(event.image);
-        if (event.details.musics.length > 0) {
-            var musicArray = [];
-            event.getMusic()
-                .forEach(elem => {
-                    musicArray.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
-                });
-            embed.addField('Event Music', `\`\`\`md\n${musicArray.join('\n')}\`\`\``);
+        if (musicArray.length > 0) {
+            musicArray.forEach(elem => {
+                stringMusic.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
+            })
+            embed.addField('Event Music', `\`\`\`md\n${stringMusic.join('\n')}\`\`\``);
         };
         if (event.getState() == -1)
             embed.addField('Starts In', timeLeft(event.start));
