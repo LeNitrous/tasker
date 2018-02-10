@@ -28,7 +28,7 @@ Kokoro
             event.msg.channel.stopTyping(true);
         }
         else {
-            Logger.error(e)
+            Logger.error(evemt)
         };
     })
     .on('ready', () => {

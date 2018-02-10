@@ -18,7 +18,7 @@ module.exports = {
                 .catch(error => {
                     if (error.name == 'EmptyResponseError')
                         return Kokoro.Bot.send(msg.channel, "❎", "There is no card with that ID");
-                    Kokoro.Bot.Error(msg, module.exports.name, error.message);
+                    Kokoro.Bot.Error(msg, module.exports.name, error);
                 });
         }
         else {
@@ -32,6 +32,8 @@ module.exports = {
                 .catch(error => {
                     if (error.name == 'EmptyResponseError')
                         return Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
+                    if (error.name == 'InvalidParameterError')
+                        return Kokoro.Bot.send(msg.channel, "❎", "Incorrect query syntax");
                     Kokoro.Bot.Error(msg, module.exports.name, error.message);
                 });
         };

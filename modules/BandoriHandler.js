@@ -55,10 +55,9 @@ module.exports = {
 
     sendCardArt(msg, cardArray, state) {
         var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
-        console.log(card);
         const embed = new Discord.RichEmbed()
             .setAuthor(card.toString(), card.getIcon())
-            .setImage(card[state])
+            .setImage(card.image[state])
             .setColor(card.getColor());
         msg.channel.send({ embed });
     },
@@ -67,7 +66,18 @@ module.exports = {
         const embed = new Discord.RichEmbed()
             .setAuthor(music.toString())
             .setThumbnail(music.jacket)
-            .setDescription(`[Listen](${music.bgm})`);
+            .setColor(bandColors[music.band])
+            .setDescription(
+            `\n• Arranger: ${music.arranger}` +
+            `\n• Composer: ${music.composer}` +
+            `\n• Lyricist: ${music.lyricist}`
+            )
+            .addField('Difficulties',
+            `★${music.difficulty.easy.level} EASY` +
+            `\n★${music.difficulty.normal.level} NORMAL` +
+            `\n★${music.difficulty.hard.level} HARD` +
+            `\n★${music.difficulty.expert.level} EXPERT` +
+            `\n\n(${music.type}) [Listen](${music.bgm})`);
         msg.channel.send({ embed });
     },
     
@@ -168,4 +178,12 @@ var emoji = {
     "Imai Lisa": '<:lisa:411101169134469120>',
     "Udagawa Ako": '<:ako:411101139983925248>',
     "Shirokane Rinko": '<:rinko:411101169260298250>'
+}
+
+var bandColors = {
+    "Poppin'Party": [255, 59, 114],
+    "Afterglow": [229, 51, 67],
+    "ハロー、ハッピーワールド！": [255, 192, 42],
+    "Pastel＊Palettes": [42, 246, 177],
+    "Roselia": [59, 73, 255],
 }
