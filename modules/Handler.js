@@ -70,6 +70,7 @@ module.exports = {
             })
         })
     },
+
     getCommand: (msg, com, pre) => {
         return new Promise((resolve, reject) => {
             var args = msg.content.split(' ');
@@ -97,23 +98,24 @@ module.exports = {
             };
         })
     },
+
     checkPermissions: (msg, cmd, cfg, shouldSend) => {
         var preq = cmd.preq;
         var perm = cmd.perm;
-        if (preq.contains("DMChatOnly") && msg.channel.guild != undefined) {
+        if (preq.includes("DMChatOnly") && msg.channel.guild != undefined) {
             if (shouldSend) msg.channel.send(cfg.reply.PermsDMChat);
             return false;
         };
-        if (preq.contains("ServerOnly") && msg.channel.guild == undefined) {
+        if (preq.includes("ServerOnly") && msg.channel.guild == undefined) {
             if (shouldSend) msg.channel.send(cfg.reply.PermsServer);
             return false;
         };
-        if (preq.contains("BotOwnerOnly") && !cfg.owner.contains(author.id)) {
+        if (preq.includes("BotOwnerOnly") && !cfg.owner.includes(msg.author.id)) {
             if (!cfg.peaceful)
                 if (shouldSend) msg.channel.send(cfg.reply.PermsBotOwner);
             return false;
         };
-        if (preq.contains("HasElevatedPerms")) {
+        if (preq.includes("HasElevatedPerms")) {
             if (msg.guild)
                 if (msg.member.permissions.has(perm, true)) {
                     if (!peaceful)
@@ -121,7 +123,7 @@ module.exports = {
                     return false;
                 };
         };
-        if (preq.contains("ServerOwnerOnly")) {
+        if (preq.includes("ServerOwnerOnly")) {
             if (msg.guild)
                 if (msg.author.id != msg.guild.ownerID) {
                     if (!peaceful)
@@ -129,12 +131,13 @@ module.exports = {
                     return false;
                 };
         };
-        if (preq.contains("UseWhitelist") && chan.guild != undefined) {
-            if (!cfg.whitelist.contains(msg.guild.id))
+        if (preq.includes("UseWhitelist") && chan.guild != undefined) {
+            if (!cfg.whitelist.includes(msg.guild.id))
                 return false;
         };
         return true;
     },
+    
     help(bot, msg, args) {
         const Commands = bot.Bot.commands;
         const Config = bot.Bot.config;
@@ -215,10 +218,3 @@ function padString(string, padLength) {
     };
     return string;
 };
-
-Array.prototype.contains = (needle) => {
-    for (i in this) {
-       if (this[i] == needle) return true;
-    }
-    return false;
- };
