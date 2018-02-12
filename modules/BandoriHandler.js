@@ -62,7 +62,8 @@ module.exports = {
         msg.channel.send({ embed });
     },
 
-    sendMusic(msg, music) {
+    sendMusic(msg, musicArray) {
+        var music = musicArray.shift();
         const embed = new Discord.RichEmbed()
             .setAuthor(music.toString())
             .setThumbnail(music.jacket)
@@ -78,6 +79,14 @@ module.exports = {
             `\n★${music.difficulty.hard.level} HARD` +
             `\n★${music.difficulty.expert.level} EXPERT` +
             `\n\n(${music.type}) [Listen](${music.bgm})`);
+        if (musicArray.length > 0) {
+            var listMusic = [];
+            musicArray.forEach(elem => {
+                listMusic.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
+            });
+            listMusic.length = 5;
+            embed.addField('Similar Music', `\`\`\`md\n${listMusic.join('\n')}\`\`\``);
+        }
         msg.channel.send({ embed });
     },
     
