@@ -9,9 +9,10 @@ module.exports = {
             .then(event => 
                 Promise.all([
                     event.getCards(),
-                    event.getMusic()
+                    event.getMusic(),
+                    event.getLocale()
                 ]).then(response => {
-                    Bandori.sendEvent(msg, event, response[0], response[1])
+                    Bandori.sendEvent(msg, event, response[0], response[1], response[2]);
                 })
             )
             .catch(error => {

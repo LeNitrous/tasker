@@ -35,7 +35,7 @@ module.exports = {
         const embed = new Discord.RichEmbed()
             .setAuthor(card.toString(), card.getIcon(),
                 `https://bandori.party/cards/${card.locale.id}`)
-            .setThumbnail(card.locale.icon.normal)
+            .setThumbnail(card.locale.image.normal_icon)
             .setColor(card.getColor())
             .addField("Skill Type", skill_header, true)
             .addField("Max Power", card.parameterMax.total + 
@@ -81,10 +81,16 @@ module.exports = {
         msg.channel.send({ embed });
     },
     
-    sendEvent(msg, event, cardArray, musicArray) {
+    sendEvent(msg, event, cardArray, musicArray, locale) {
         var stringCard = [];
         var stringMusic = [];
         var stringMember = [];
+        var event_title;
+        event.locale = locale;
+        if (event.locale)
+            event_title = event.locale.name;
+        else
+            event_title = event.name;
         cardArray
             .forEach(elem => {
                 stringCard.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
@@ -94,7 +100,8 @@ module.exports = {
                 stringMember.push(emoji[elem])
             });
         const embed = new Discord.RichEmbed()
-            .setAuthor(event.name, event.getIcon())
+            .setAuthor(event_title, event.getIcon(),
+                `https://bandori.party/events/${event.id}`)
             .addField('Event Members', stringMember.join(' '), true)
             .addField('Event Type', caseFix(event.type), true)
             .addField('Event Reward Cards', `\`\`\`md\n${stringCard.join('\n')}\`\`\``)
