@@ -53,6 +53,7 @@ module.exports = {
         msg.channel.send({ embed });
     },
 
+
     sendCardArt(msg, cardArray, state) {
         var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
         const embed = new Discord.RichEmbed()
@@ -88,6 +89,24 @@ module.exports = {
             embed.addField('Similar Music', `\`\`\`md\n${listMusic.join('\n')}\`\`\``);
         }
         msg.channel.send({ embed });
+    },
+
+    sendSearch(msg, array) {
+        var list = [];
+        array.forEach(elem => {
+            list.push(`#${elem.id.toString().padStart(3, "0")} > ` + elem.toString());
+        });
+        found = list.length;
+        list = list.join('\n');
+        msg.author.send(`Found **${found}** occurences`);
+        if (list.length > 1950) {
+            var result = Discord.Util.splitMessage(list);
+            result.forEach(block => {
+                msg.author.send(block, {code: 'md'});
+            });
+        }
+        else
+            msg.author.send(list, {code: 'md'});
     },
     
     sendEvent(msg, event, cardArray, musicArray, locale) {

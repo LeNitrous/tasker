@@ -13,8 +13,10 @@ Array.prototype.remove = function() {
 
 module.exports = {
     name: "BanG Dream! Art",
-    desc: "Search for BanG Dream! card art using keywords or its ID",
-    help: 'Search for BanG Dream! card art using keywords.\nKeywords can be "rarity" (number), "attribute", "name" (first name). You can also use "ID" (number) to look it up directly\nUse "trained" or "normal" to get what state. Leave blank to set it to normal.',
+    desc: "Search for BanG Dream! card art using keywords or by ID",
+    help: 'Search for BanG Dream! card art using keywords or by ID.' +
+    'Keywords can be "rarity" (number), "attribute", "name" (first name). You can also use "ID" (number) to look it up directly.' +
+    'Use "trained" or "normal" to get what state. Leave blank to set it to normal.',
     run: (Kokoro, msg, args) => {
         args = args.map(val => val.toLowerCase());
         var allowStates = ['trained', 'normal'];
