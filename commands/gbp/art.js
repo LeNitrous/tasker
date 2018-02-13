@@ -32,10 +32,10 @@ module.exports = {
         else if (args.length <= 1 && !isNaN(args[0])) {
             Bandori.Api.getCardByID(args[0])
                 .then(card => {
-                    Bandori.sendCardArt(msg, card, state);
+                    Bandori.sendCardArt(msg.channel, card, state);
                 })
                 .catch(error => {
-                    if (error.name == 'EmptyResponseError')
+                    if (error.staus == 400)
                         return Kokoro.Bot.send(msg.channel, "❎", "There is no card with that ID");
                     Kokoro.Bot.Error(msg, module.exports.name, error.message);
                 });
@@ -43,10 +43,10 @@ module.exports = {
         else {
             Bandori.Api.getCardByQuery(args)
                 .then(cards => {
-                    Bandori.sendCardArt(msg, cards, state);
+                    Bandori.sendCardArt(msg.channel, cards, state);
                 })
                 .catch(error => {
-                    if (error.name == 'EmptyResponseError')
+                    if (error.status == 400)
                         return Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
                     Kokoro.Bot.Error(msg, module.exports.name, error.message);
                 });

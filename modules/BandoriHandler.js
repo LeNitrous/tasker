@@ -5,6 +5,7 @@ module.exports = {
     Api: new BandoriApi({
         region: 'jp'
     }),
+
     sendCard(msg, cardArray, locale) {
         var card = (cardArray.length > 1) ? cardArray.shift() : cardArray;
         var maxLevel, skill_header, skill_info, skill_title;
@@ -50,7 +51,7 @@ module.exports = {
             listCards.length = 5;
             embed.addField('Similar Cards', `\`\`\`md\n${listCards.join('\n')}\`\`\``);
         }
-        msg.channel.send({ embed });
+        msg.send({ embed });
     },
 
 
@@ -60,15 +61,16 @@ module.exports = {
             .setAuthor(card.toString(), card.getIcon())
             .setImage(card.image[state])
             .setColor(card.getColor());
-        msg.channel.send({ embed });
+        msg.send({ embed });
     },
 
     sendMusic(msg, musicArray) {
         var music = musicArray.shift();
+        var color = (bandColors.hasOwnProperty(music.band)) ? bandColors[music.band] : [233, 30, 99];
         const embed = new Discord.RichEmbed()
             .setAuthor(music.toString())
             .setThumbnail(music.jacket)
-            .setColor(bandColors[music.band])
+            .setColor()
             .setDescription(
             `\n• Arranger: ${music.arranger}` +
             `\n• Composer: ${music.composer}` +
@@ -88,7 +90,7 @@ module.exports = {
             listMusic.length = 5;
             embed.addField('Similar Music', `\`\`\`md\n${listMusic.join('\n')}\`\`\``);
         }
-        msg.channel.send({ embed });
+        msg.send({ embed });
     },
 
     sendSearch(msg, array) {
@@ -98,15 +100,15 @@ module.exports = {
         });
         found = list.length;
         list = list.join('\n');
-        msg.author.send(`Found **${found}** occurences`);
+        msg.send(`Found **${found}** occurences`);
         if (list.length > 1950) {
             var result = Discord.Util.splitMessage(list);
             result.forEach(block => {
-                msg.author.send(block, {code: 'md'});
+                msg.send(block, {code: 'md'});
             });
         }
         else
-            msg.author.send(list, {code: 'md'});
+            msg.send(list, {code: 'md'});
     },
     
     sendEvent(msg, event, cardArray, musicArray, locale) {
@@ -145,7 +147,15 @@ module.exports = {
             embed.addField('Starts In', timeLeft(event.start));
         else if (event.getState() == 0)
             embed.addField('Ends In', timeLeft(event.end));
-        msg.channel.send({ embed });
+        msg.send({ embed });
+    },
+
+    sendKoma(msg, koma) {
+        const embed = new Discord.RichEmbed()
+            .setAuthor(`#${koma.id} ${koma.title}`)
+            .setColor([233, 30, 99])
+            .setImage(koma.image);
+        msg.send({ embed });
     }
 };
 

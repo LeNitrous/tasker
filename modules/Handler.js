@@ -117,21 +117,21 @@ module.exports = {
         };
         if (preq.includes("HasElevatedPerms")) {
             if (msg.guild)
-                if (msg.member.permissions.has(perm, true)) {
-                    if (!peaceful)
-                        if (shouldSend) chan.send(reply.PermsElevatedPerms);
+                if (!msg.member.permissions.has(perm, true)) {
+                    if (!cfg.peaceful)
+                        if (shouldSend) msg.channel.send(cfg.reply.PermsElevatedPerms);
                     return false;
                 };
         };
         if (preq.includes("ServerOwnerOnly")) {
             if (msg.guild)
                 if (msg.author.id != msg.guild.ownerID) {
-                    if (!peaceful)
-                        if (shouldSend) chan.send(reply.PermsServerOwner);
+                    if (!cfg.peaceful)
+                        if (shouldSend) msg.channel.send(cfg.reply.PermsServerOwner);
                     return false;
                 };
         };
-        if (preq.includes("UseWhitelist") && chan.guild != undefined) {
+        if (preq.includes("UseWhitelist") && msg.channel.guild != undefined) {
             if (!cfg.whitelist.includes(msg.guild.id))
                 return false;
         };

@@ -28,11 +28,11 @@ module.exports = {
                 .then(card =>
                     card.getLocale()
                         .then(locale => {
-                            Bandori.sendCard(msg, card, locale)
+                            Bandori.sendCard(msg.channel, card, locale);
                         })
                 )
                 .catch(error => {
-                    if (error.name == 'EmptyResponseError')
+                    if (error.status == 400)
                         return Kokoro.Bot.send(msg.channel, "❎", "There is no card with that ID");
                     Kokoro.Bot.Error(msg, module.exports.name, error);
                 });
@@ -40,10 +40,10 @@ module.exports = {
         else if (isSearch) {
             Bandori.Api.getCardByQuery(args)
                 .then(cards =>
-                    Bandori.sendSearch(msg, cards)
+                    Bandori.sendSearch(msg.author, cards)
                 )
                 .catch(error => {
-                    if (error.name == 'EmptyResponseError')
+                    if (error.status == 400)
                         return Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.Bot.send(msg.channel, "❎", "Incorrect query syntax");
@@ -55,11 +55,11 @@ module.exports = {
                 .then(card => 
                     card[0].getLocale()
                         .then(locale => {
-                            Bandori.sendCard(msg, card, locale)
+                            Bandori.sendCard(msg.channel, card, locale);
                         })
                 )
                 .catch(error => {
-                    if (error.name == 'EmptyResponseError')
+                    if (error.stats == 400)
                         return Kokoro.Bot.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.Bot.send(msg.channel, "❎", "Incorrect query syntax");
