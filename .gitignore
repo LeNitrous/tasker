@@ -9,6 +9,9 @@ commands/*
 config.json
 error.log
 
+# Data
+./data/
+
 # Exclusions
 !commands/help.js
 !commands/bot/

@@ -12,15 +12,20 @@ module.exports = {
     run: (Kokoro, msg, args) => {
         var setting = require('../../data/guild.json');
         var guildpos = setting.findIndex(elem => elem.guild == msg.guild.id);
-        var bandoriSettings = setting[guildpos].bandori;
         if (args.length <= 0)
             return Kokoro.Bot.send(msg.channel, "❎", `Please use a valid setting. See help for details.`);
         var selected = args.shift().toLowerCase();
-        if (!bandoriSettings)
-            bandoriSettings = {};
+        if (guildpos == -1) {
+            setting.push({
+                guild: msg.guild.id
+            });
+            guildpos = setting.findIndex(elem => elem.guild == msg.guild.id);
+        }
+        if (!setting[guildpos].bandori)
+            setting[guildpos].bandori = {};
         if (selected == "birthday") {
-            if (args.length == 0 && bandoriSettings.birthdayAnnounceChannel) {
-                delete bandoriSettings.birthdayAnnounceChannel;
+            if (args.length == 0 && setting[guildpos].bandori.birthdayAnnounceChannel) {
+                delete setting[guildpos].bandori.birthdayAnnounceChannel;
                 fs.writeFile('./data/guild.json', JSON.stringify(setting), (err) => {
                     if (err) throw Kokoro.Bot.Error(msg, module.exports.name, err);
                 });
@@ -42,15 +47,15 @@ module.exports = {
                 });
                 guildpos = setting.findIndex(elem => elem.guild == msg.guild.id);
             }
-            bandoriSettings.birthdayAnnounceChannel = chanId;
+            setting[guildpos].bandori.birthdayAnnounceChannel = chanId;
             fs.writeFile('./data/guild.json', JSON.stringify(setting), (err) => {
                 if (err) throw Kokoro.Bot.Error(msg, module.exports.name, err);
             });
             Kokoro.Bot.send(msg.channel, "✅", `Birthday announce channel is set to <#${chanId}>.`);
         }
         else if (selected == "event") {
-            if (args.length == 0 && bandoriSettings.eventAnnounceChannel) {
-                delete bandoriSettings.eventAnnounceChannel;
+            if (args.length == 0 && setting[guildpos].bandori.eventAnnounceChannel) {
+                delete setting[guildpos].bandori.eventAnnounceChannel;
                 fs.writeFile('./data/guild.json', JSON.stringify(setting), (err) => {
                     if (err) throw Kokoro.Bot.Error(msg, module.exports.name, err);
                 });
@@ -72,7 +77,7 @@ module.exports = {
                 });
                 guildpos = setting.findIndex(elem => elem.guild == msg.guild.id);
             }
-            bandoriSettings.eventAnnounceChannel = chanId;
+            setting[guildpos].bandori.eventAnnounceChannel = chanId;
             fs.writeFile('./data/guild.json', JSON.stringify(setting), (err) => {
                 if (err) throw Kokoro.Bot.Error(msg, module.exports.name, err);
             });
