@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const Cron = require('cron');
+const fs = require('fs');
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
 const ExecError = require('./models/ErrorExecution.js');
@@ -12,6 +13,7 @@ const ExecError = require('./models/ErrorExecution.js');
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
  * @param {String} options.prefix Bot's prefix to recognize commands
  * @param {Boolean} options.peaceful Bot's behavior toward permission checks
+ * @param {Boolean} options.logError Bot logs most recent error.
  * @param {String[]} options.ownerID Bot's owner mapped in a string array
  */
 class Kokoro extends Discord.Client {
@@ -22,7 +24,8 @@ class Kokoro extends Discord.Client {
         this.prefix = options.prefix;
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
-        this.peaceful = options.peaceful;
+        this.logError = options.logError || false;
+        this.peaceful = options.peaceful || false;
         
         this.handler = new Handler(this);
         this.error = ExecError;
@@ -42,13 +45,21 @@ class Kokoro extends Discord.Client {
                 }
             })
             .on("error", error => {
+                var log;
                 if (error instanceof this.error) {
-                    // todo do something with the error
                     this.send(error.msg.channel, "💢", "Oops! That wasn't supposed to happen.")
                     error.msg.channel.stopTyping(true);
+                    log = `An error occured in "${error.detail.source}" where:\n` + error.detail.stack;
                 }
-                else
+                else {
+                    log = "An error occured somehow where:\n" + error.stack;
                     Logger.error(error);
+                }
+                if (!this.logError) return;
+                fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + log,
+                    error => {
+                        if (error) return Logger.error(error);
+                    });
             })
             .on("message", msg => {
                 if (msg.author.bot) return;
