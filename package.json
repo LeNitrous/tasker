@@ -1,34 +1,38 @@
 {
   "name": "kokoro",
   "version": "0.0.1",
-  "description": "A BanG Dream! Girls Band Party! data viewer Discord Bot.",
-  "main": "kokoro.js",
+  "description": "A discord.js bot framework",
+  "main": "index.js",
   "dependencies": {
-    "chalk": "^2.3.0",
+    "chalk": "^2.3.1",
     "cron": "^1.3.0",
     "discord.js": "^11.3.0",
-    "shelljs": "^0.8.1",
-    "superagent": "^3.6.0"
+    "glob": "^7.1.2"
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node kokoro"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LeNitrous/kokoro.git"
+    "url": "git+https://github.com/LeNitrous/kokoro-base.git"
   },
   "keywords": [
-    "discord",
-    "bang_dream",
+    "bang",
+    "dream",
     "bandori",
-    "garupa",
-    "girls_band_party"
+    "gbp",
+    "girls",
+    "band",
+    "party",
+    "kokoro",
+    "discord",
+    "discord.js"
   ],
   "author": "Nitrous",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/LeNitrous/kokoro/issues"
+    "url": "https://github.com/LeNitrous/kokoro-base/issues"
   },
-  "homepage": "https://github.com/LeNitrous/kokoro#readme"
+  "homepage": "https://github.com/LeNitrous/kokoro-base#readme"
 }
