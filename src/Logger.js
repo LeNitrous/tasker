@@ -6,7 +6,7 @@ module.exports = {
 		return console.log(`${chalk.bgGreen.black(` ${h} `)} ${text}`);
 	},
 
-	infoGeneric(text, h = 'INFO') {
+	generic(text, h = 'INFO') {
 		return console.log(`${chalk.bgWhite.black(` ${h} `)} ${text}`);
 	},
 	

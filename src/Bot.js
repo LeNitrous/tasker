@@ -120,6 +120,7 @@ class Kokoro extends Discord.Client {
 
     loadEvent(event) {
         this.events[event.name] = this.on(event.event, event.task);
+        Logger.generic("Loaded event module: " + event.name);
     }
 
     destroyEvent(event) {
@@ -133,6 +134,7 @@ class Kokoro extends Discord.Client {
             start: false,
             onTick: job.task.bind(null, this)
         });
+        Logger.generic("Loaded job module: " + job.name);
     }
 
     destroyJob(job) {
