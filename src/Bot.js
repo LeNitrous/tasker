@@ -28,7 +28,6 @@ class Kokoro extends Discord.Client {
         this.peaceful = options.peaceful || false;
         
         this.handler = new Handler(this);
-        this.error = ExecError;
         this.jobs = {};
         this.tasks = {};
         this.events = {};
@@ -45,19 +44,13 @@ class Kokoro extends Discord.Client {
                 }
             })
             .on("error", error => {
-                var log;
-                if (error instanceof this.error) {
+                if (error instanceof ExecError) {
                     this.send(error.msg.channel, "💢", "Oops! That wasn't supposed to happen.")
                     error.msg.channel.stopTyping(true);
-                    log = `An error occured in "${error.detail.source}" where:\n` + error.detail.stack;
-                    Logger.error(log);
                 }
-                else {
-                    log = "An error occured somehow where:\n" + error.stack;
-                    Logger.error(log);
-                }
+                Logger.error(error);
                 if (!this.logError) return;
-                fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + log,
+                fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + error,
                     error => {
                         if (error) return Logger.error(error.stack);
                     });
@@ -70,7 +63,7 @@ class Kokoro extends Discord.Client {
                     .then(task => {
                         if (this.handler.checkPermission(msg, this, task.load))
                             return this.send(msg.channel, "⛔", "You have no permission do this task.");
-                        if (!task.load.task)
+                        if (typeof task.load.task !== "function")
                             return Logger.warn("Loaded task has no action!");
                         msg.channel.startTyping();
                         Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
@@ -152,6 +145,10 @@ class Kokoro extends Discord.Client {
                 Logger.error("An error has occured...\n");
                 console.log(e);
             })
+    }
+
+    throwError(msg, error) {
+        this.emit("error", new ExecError(error, msg));
     }
 }
 
