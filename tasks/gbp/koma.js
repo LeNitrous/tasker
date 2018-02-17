@@ -10,7 +10,7 @@ module.exports = {
                 Bandori.sendKoma(msg.channel, koma[getRandomInt(koma.length)])
             )
             .catch(error => {
-                Kokoro.error(msg.channel, module.exports, error.message);
+                Kokoro.throwError(msg.channel, module.exports, error.message);
             });
     }
 };

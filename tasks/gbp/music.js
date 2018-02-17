@@ -26,7 +26,7 @@ module.exports = {
                 .catch(error => {
                     if (error.status == 400)
                         return Kokoro.send(msg.channel, "❎", "There is no music with that ID");
-                    Kokoro.error(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, module.exports, error.message);
                 });
         }
         else if (isSearch) {
@@ -39,7 +39,7 @@ module.exports = {
                         return Kokoro.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.send(msg.channel, "❎", "Incorrect query syntax");
-                    Kokoro.error(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, module.exports, error.message);
                 });
         }
         else {
@@ -52,7 +52,7 @@ module.exports = {
                         return Kokoro.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.send(msg.channel, "❎", "Incorrect query syntax");
-                    Kokoro.error(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, module.exports, error.message);
                 });
         };
     }

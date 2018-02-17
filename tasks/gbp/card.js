@@ -39,7 +39,7 @@ module.exports = {
                 .catch(error => {
                     if (error.status == 400)
                         return Kokoro.send(msg.channel, "❎", "There is no card with that ID");
-                    Kokoro.error(msg, module.exports, error);
+                    Kokoro.throwError(msg, module.exports, error);
                 });
         }
         else if (isSearch) {
@@ -52,7 +52,7 @@ module.exports = {
                         return Kokoro.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.send(msg.channel, "❎", "Incorrect query syntax");
-                    Kokoro.error(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, module.exports, error.message);
                 });
         }
         else {
@@ -68,7 +68,7 @@ module.exports = {
                         return Kokoro.send(msg.channel, "❎", "There were no matches found");
                     if (error.name == 'InvalidParameterError')
                         return Kokoro.send(msg.channel, "❎", "Incorrect query syntax");
-                    Kokoro.error(msg, module.exports.name, error.message);
+                    Kokoro.throwError(msg, module.exports.name, error.message);
                 });
         };
     }

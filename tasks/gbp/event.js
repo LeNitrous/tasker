@@ -18,7 +18,7 @@ module.exports = {
             .catch(error => {
                 if (error.status == 400)
                         return Kokoro.send(msg.channel, "❎", "There is no event found");
-                Kokoro.error(msg, module.exports, error.message);
+                Kokoro.throwError(msg, module.exports, error.message);
             });
     }
 };
