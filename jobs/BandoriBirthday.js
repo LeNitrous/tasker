@@ -5,10 +5,10 @@ module.exports = {
     task: (Bot) => {
         var settings = require("../data/guilds.json");
         var birthday = require("../data/BandoriBirthday.json")
-            .filter(item => isToday(parseInt(elem.date))).shift();
+            .filter(item => isToday(parseInt(item.date))).shift();
         if (!birthday) return;
         settings.forEach(item => {
-            if (elem.bandori.birthdayChannel) {
+            if (item.bandori.birthdayChannel) {
                 Kokoro
                     .guilds.find("id", item.guild)
                     .channels.find("id", item.bandori.birthdayChannel)
