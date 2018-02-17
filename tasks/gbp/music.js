@@ -12,7 +12,7 @@ module.exports = {
         {name: "band", desc: "Band's nickname: popipa | afuro | pasupare | roselia | harohapi"},
         {name: "type", desc: "Music type: cover | original"}
     ],
-    run: (Kokoro, msg, args) => {
+    task: (Kokoro, msg, args) => {
         var isSearch = args.includes('search');
         if (isSearch)
             args.remove('search');

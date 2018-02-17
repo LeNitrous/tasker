@@ -4,7 +4,7 @@ module.exports = {
     name: "BanG Dream! Cards",
     desc: "Girls Band Party game event",
     help: 'Get current Girls Band Party event.',
-    run: (Kokoro, msg, args) => {
+    task: (Kokoro, msg, args) => {
         Bandori.Api.getCurrentEvent()
             .then(event => 
                 Promise.all([

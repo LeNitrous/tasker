@@ -21,7 +21,7 @@ module.exports = {
         {name: "rarity", desc: "Card's rarity number keyword"},
         {name: "attribute", desc: "Card's attribute keyword"},
     ],
-    run: (Kokoro, msg, args) => {
+    task: (Kokoro, msg, args) => {
         args = args.map(val => val.toLowerCase());
         var allowStates = ['trained', 'normal'];
         var state = args.filter(str => allowStates.includes(str) );

@@ -13,10 +13,8 @@ module.exports = {
     ],
     task: (Kokoro, msg, args) => {
         var allowedOptions = ["birthday", "event"];
-        console.log(fs.existsSync(dataDir));
-        if (!fs.existsSync(dataDir)) {
+        if (!fs.existsSync(dataDir))
             saveData(Kokoro, msg, dataDir, []);
-        }
         var setting = require(dataDir);
         if (args.length < 1)
             return Kokoro.send(msg.channel, "❎", "Option is empty.");
