@@ -1,7 +1,7 @@
 const Bot = require("./src/Bot.js");
 const Kokoro = new Bot({
     tasks: "tasks/**",
-    token: "MzMxNTUyMDA0NTQ1NTc2OTYx.DWjjNQ.ZzWcrXLK1OW1CB1m6_ZciiFpW5A",
+    token: "",
     prefix: "~!",
     ownerID: ["170905486407761931"],
     logError: true
