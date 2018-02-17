@@ -41,7 +41,7 @@ module.exports = {
                 .catch(error => {
                     if (error.staus == 400)
                         return Kokoro.send(msg.channel, "❎", "There is no card with that ID");
-                    Kokoro.throwError(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, error);
                 });
         }
         else {
@@ -52,7 +52,7 @@ module.exports = {
                 .catch(error => {
                     if (error.status == 400)
                         return Kokoro.send(msg.channel, "❎", "There were no matches found");
-                    Kokoro.throwError(msg, module.exports, error.message);
+                    Kokoro.throwError(msg, error);
                 });
         }
     }

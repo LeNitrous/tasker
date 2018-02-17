@@ -65,12 +65,12 @@ module.exports = {
     },
 
     sendMusic(msg, musicArray) {
-        var music = musicArray.shift();
+        var music = (musicArray.length > 1) ? musicArray.shift() : musicArray;
         var color = (bandColors.hasOwnProperty(music.band)) ? bandColors[music.band] : [233, 30, 99];
         const embed = new Discord.RichEmbed()
             .setAuthor(music.toString())
             .setThumbnail(music.jacket)
-            .setColor()
+            .setColor(bandColors[music.band])
             .setDescription(
             `\n• Arranger: ${music.arranger}` +
             `\n• Composer: ${music.composer}` +

@@ -1,0 +1,7 @@
+Last exception occured at Sat Feb 17 2018 15:34:40 GMT+0800 (Malay Peninsula Standard Time)
+TaskExecutionError: A task failed execution.
+TypeError: musicArray.shift is not a function
+    at Object.sendMusic (C:\Users\Nitrous\Documents\Nathan\Projects\kokoro-base\mods\BandoriUtils.js:68:32)
+    at Bandori.Api.getMusicByID.then.music (C:\Users\Nitrous\Documents\Nathan\Projects\kokoro-base\tasks\gbp\music.js:24:29)
+    at <anonymous>
+    at process._tickCallback (internal/process/next_tick.js:188:7)
