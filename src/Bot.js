@@ -50,15 +50,16 @@ class Kokoro extends Discord.Client {
                     this.send(error.msg.channel, "💢", "Oops! That wasn't supposed to happen.")
                     error.msg.channel.stopTyping(true);
                     log = `An error occured in "${error.detail.source}" where:\n` + error.detail.stack;
+                    Logger.error(log);
                 }
                 else {
                     log = "An error occured somehow where:\n" + error.stack;
-                    Logger.error(error);
+                    Logger.error(log);
                 }
                 if (!this.logError) return;
                 fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + log,
                     error => {
-                        if (error) return Logger.error(error);
+                        if (error) return Logger.error(error.stack);
                     });
             })
             .on("message", msg => {
