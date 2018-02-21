@@ -7,7 +7,7 @@ const ExecError = require('./models/ErrorExecution.js');
 
 /**
  * The bot class
- * @class Kokoro
+ * @class Tasker
  * @extends {Discord.Client}
  * @param {Object} options Client configuration options
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
@@ -16,7 +16,7 @@ const ExecError = require('./models/ErrorExecution.js');
  * @param {Boolean} options.logError Bot logs most recent error.
  * @param {String[]} options.ownerID Bot's owner mapped in a string array
  */
-class Kokoro extends Discord.Client {
+class Tasker extends Discord.Client {
     constructor(options = {}) {
         super(options);
         
@@ -87,7 +87,7 @@ class Kokoro extends Discord.Client {
      * @param {MessageChannel} channel 
      * @param {String} icon 
      * @param {String} content
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     send(channel, icon, content) {
         return channel.send(`${icon} » ${content}`);
@@ -96,7 +96,7 @@ class Kokoro extends Discord.Client {
     /**
      * Starts and runs the bot
      * @returns {Promise}
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     start() {
         return new Promise((resolve, reject) => {
@@ -115,7 +115,7 @@ class Kokoro extends Discord.Client {
     /**
      * Reloads all loaded tasks
      * @returns {Promise}
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     reloadTasks() {
         return new Promise((resolve, reject) => {
@@ -132,7 +132,7 @@ class Kokoro extends Discord.Client {
     /**
      * Load a client event
      * @param {Object} event 
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     loadEvent(event) {
         this.events[event.name] = this.on(event.event, event.task);
@@ -142,7 +142,7 @@ class Kokoro extends Discord.Client {
     /**
      * Remove a client event
      * @param {String} event 
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     destroyEvent(event) {
         this.events[event.name] = undefined;
@@ -151,7 +151,7 @@ class Kokoro extends Discord.Client {
     /**
      * Load a client cron job
      * @param {Object} job 
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     loadJob(job) {
         this.jobs[job.name] = new Cron.CronJob({
@@ -166,7 +166,7 @@ class Kokoro extends Discord.Client {
     /**
      * Remove a client cron job
      * @param {any} job 
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     destroyJob(job) {
         this.jobs[job.name] = undefined;
@@ -174,7 +174,7 @@ class Kokoro extends Discord.Client {
 
     /**
      * Gracefully shutdown the client
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     shutdown() {
         Logger.warn("Shutting down");
@@ -192,11 +192,11 @@ class Kokoro extends Discord.Client {
      * Emit an error event passing error arguments
      * @param {String} msg 
      * @param {Error} error 
-     * @memberof Kokoro
+     * @memberof Tasker
      */
     throwError(msg, error) {
         this.emit("error", new ExecError(error, msg));
     }
 }
 
-module.exports = Kokoro;
+module.exports = Tasker;
