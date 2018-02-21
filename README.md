@@ -1,5 +1,5 @@
-# Kokoro-Base
-The base bot framework used to run the BanG Dream! data-viewer bot. Built with Node.js and Discord.js. To see the bot in-action, feel free to visit my [Discord Server](https://discord.gg/77Wpjvm)
+# Tasker
+The base bot framework built with Node.js and Discord.js. To see the bot in-action, feel free to visit my [Discord Server](https://discord.gg/77Wpjvm)
 
 ## Requirements
 - [Node.js 6.0.0](https://nodejs.org/en/) or newer
@@ -29,4 +29,4 @@ Kokoro.start();
 ```
 
 ## License
-This project is licensed under the MIT License. Please read the [license](https://github.com/LeNitrous/kokoro-base/blob/master/LICENSE) in this repository. [tl;dr](https://tldrlegal.com/license/mit-license) version of the license.
+This project is licensed under the MIT License. Please read the [license](https://github.com/LeNitrous/tasker/blob/master/LICENSE) in this repository. [tl;dr](https://tldrlegal.com/license/mit-license) version of the license.

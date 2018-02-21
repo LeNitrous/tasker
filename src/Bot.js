@@ -82,10 +82,22 @@ class Kokoro extends Discord.Client {
                 .on("SIGUSR2", () => this.shutdown());
     }
 
+    /**
+     * Send a formatted message to a channel
+     * @param {MessageChannel} channel 
+     * @param {String} icon 
+     * @param {String} content
+     * @memberof Kokoro
+     */
     send(channel, icon, content) {
         return channel.send(`${icon} » ${content}`);
     }
 
+    /**
+     * Starts and runs the bot
+     * @returns {Promise}
+     * @memberof Kokoro
+     */
     start() {
         return new Promise((resolve, reject) => {
             this.handler.loadTasks(this.taskDir)
@@ -100,6 +112,11 @@ class Kokoro extends Discord.Client {
         })
     }
 
+    /**
+     * Reloads all loaded tasks
+     * @returns {Promise}
+     * @memberof Kokoro
+     */
     reloadTasks() {
         return new Promise((resolve, reject) => {
             this.handler.loadTasks(this.taskDir)
@@ -112,15 +129,30 @@ class Kokoro extends Discord.Client {
         })
     }
 
+    /**
+     * Load a client event
+     * @param {Object} event 
+     * @memberof Kokoro
+     */
     loadEvent(event) {
         this.events[event.name] = this.on(event.event, event.task);
         Logger.generic("Loaded event module: " + event.name);
     }
 
+    /**
+     * Remove a client event
+     * @param {String} event 
+     * @memberof Kokoro
+     */
     destroyEvent(event) {
         this.events[event.name] = undefined;
     }
 
+    /**
+     * Load a client cron job
+     * @param {Object} job 
+     * @memberof Kokoro
+     */
     loadJob(job) {
         this.jobs[job.name] = new Cron.CronJob({
             cronTime: job.time,
@@ -131,10 +163,19 @@ class Kokoro extends Discord.Client {
         Logger.generic("Loaded job module: " + job.name);
     }
 
+    /**
+     * Remove a client cron job
+     * @param {any} job 
+     * @memberof Kokoro
+     */
     destroyJob(job) {
         this.jobs[job.name] = undefined;
     }
 
+    /**
+     * Gracefully shutdown the client
+     * @memberof Kokoro
+     */
     shutdown() {
         Logger.warn("Shutting down");
         this.destroy()
@@ -147,6 +188,12 @@ class Kokoro extends Discord.Client {
             })
     }
 
+    /**
+     * Emit an error event passing error arguments
+     * @param {String} msg 
+     * @param {Error} error 
+     * @memberof Kokoro
+     */
     throwError(msg, error) {
         this.emit("error", new ExecError(error, msg));
     }
