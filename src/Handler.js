@@ -63,10 +63,10 @@ class TaskHandler {
         return new Promise((resolve, reject) => {
             var parentArg = args.shift();
             var loadedTask;
-            if (!task.tasks.hasOwnProperty(parentArg)) return;
+            if (!task.tasks[parentArg]) return;
             if (task.tasks[parentArg] instanceof TaskGroup) {
                 var childArg = args.shift();
-                if (task.tasks[parentArg].tasks.hasOwnProperty(childArg))
+                if (task.tasks[parentArg].tasks[childArg])
                     loadedTask = task.tasks[parentArg].tasks[childArg];
             }
             else if (task.tasks[parentArg] instanceof Task) {
