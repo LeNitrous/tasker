@@ -72,7 +72,7 @@ class Tasker extends Discord.Client {
                         msg.channel.stopTyping(true);
                     })
                     .catch(error => {
-                        this.emit("error", error);
+                        this.throwError(msg, error);
                     });
             })
 
