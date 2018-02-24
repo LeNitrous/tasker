@@ -66,8 +66,8 @@ class TaskHandler {
             if (!task.tasks[parentArg]) return;
             if (task.tasks[parentArg] instanceof TaskGroup) {
                 var childArg = args.shift();
-                if (task.tasks[parentArg].tasks[childArg])
-                    loadedTask = task.tasks[parentArg].tasks[childArg];
+                if (!task.tasks[parentArg].tasks[childArg]) return;
+                loadedTask = task.tasks[parentArg].tasks[childArg];
             }
             else if (task.tasks[parentArg] instanceof Task) {
                 loadedTask = task.tasks[parentArg];
