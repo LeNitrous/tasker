@@ -141,11 +141,11 @@ class Tasker extends Discord.Client {
 
     /**
      * Remove a client event
-     * @param {String} event 
+     * @param {String} name 
      * @memberof Tasker
      */
-    destroyEvent(event) {
-        this.events[event.name] = undefined;
+    destroyEvent(name) {
+        this.events[name] = undefined;
     }
 
     /**
@@ -160,16 +160,26 @@ class Tasker extends Discord.Client {
             start: false,
             onTick: job.task.bind(null, this)
         });
+        this.jobs[job.name].do = job.task.bind(null, this);
         Logger.generic("Loaded job module: " + job.name);
     }
 
     /**
-     * Remove a client cron job
-     * @param {any} job 
+     * Force do a cron job
+     * @param {String} name
      * @memberof Tasker
      */
-    destroyJob(job) {
-        this.jobs[job.name] = undefined;
+    doJob(name) {
+        this.jobs[name].do();
+    }
+
+    /**
+     * Remove a client cron job
+     * @param {String} name 
+     * @memberof Tasker
+     */
+    destroyJob(name) {
+        this.jobs[name] = undefined;
     }
 
     /**
