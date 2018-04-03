@@ -44,7 +44,7 @@ class Tasker extends Discord.Client {
                 }
             })
             .on("error", error => {
-                if (error instanceof ExecError) {
+                if (error instanceof ExecError && error.msg.channel) {
                     this.send(error.msg.channel, "💢", "Oops! That wasn't supposed to happen.")
                     error.msg.channel.stopTyping(true);
                 }
