@@ -79,7 +79,19 @@ class Tasker extends Discord.Client {
             process
                 .on("SIGINT", () => this.shutdown())
                 .on("SIGUSR1", () => this.shutdown())
-                .on("SIGUSR2", () => this.shutdown());
+                .on("SIGUSR2", () => this.shutdown())
+                .on("unhandledRejection", (reason, promise) => {
+                    this.throwError("Unhandled Promise Rejection.", reason);
+                })
+                .on("uncaughtException", (error) => {
+                    this.throwError("Uncaught Exception.", error);
+                    this.options.ownerID.forEach(id => {
+                        var dmChannel = this.users.get(id);
+                        this.send(dmChannel, "⚠", "An uncaught exception has occured and the bot has shutdown.");
+                        dmChannel.send(error, {code: "md"});
+                    });
+                    this.shutdown();
+                });
     }
 
     /**
