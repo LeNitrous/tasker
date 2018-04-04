@@ -1,6 +1,9 @@
 const Discord = require('discord.js');
+const EnmapRethink = require('enmap-rethink');
+const Enmap = require('enmap');
 const Cron = require('cron');
 const fs = require('fs');
+
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
 const ExecError = require('./models/ErrorExecution.js');
@@ -12,20 +15,19 @@ const ExecError = require('./models/ErrorExecution.js');
  * @param {Object} options Client configuration options
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
  * @param {String} options.prefix Bot's prefix to recognize commands
- * @param {Boolean} options.peaceful Bot's behavior toward permission checks
  * @param {Boolean} options.logError Bot logs most recent error.
  * @param {String[]} options.ownerID Bot's owner mapped in a string array
  */
 class Tasker extends Discord.Client {
     constructor(options = {}) {
         super(options);
-        
+
         this.token = options.token;
         this.prefix = options.prefix;
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
         this.logError = options.logError || false;
-        this.peaceful = options.peaceful || false;
+        this.settings = new Enmap({provider: new EnmapRethink({name: "table"})});
         
         this.handler = new Handler(this);
         this.jobs = {};
@@ -38,22 +40,22 @@ class Tasker extends Discord.Client {
             .on("reconnected", () => Logger.warn("CLIENT RECONNECTING"))
             .on("resume", () => Logger.info("CLIENT RECONNECTED"))
             .on("ready", () => {
-                Logger.info("CLIENT CONNECTED");
                 for (var job in this.jobs) {
                     this.jobs[job].start();
                 }
+                Logger.info("CLIENT CONNECTED");
             })
             .on("error", error => {
+                Logger.error(error);
                 if (error instanceof ExecError && error.msg.channel) {
-                    this.send(error.msg.channel, "💢", "Oops! That wasn't supposed to happen.")
                     error.msg.channel.stopTyping(true);
                 }
-                Logger.error(error);
-                if (!this.logError) return;
-                fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + error,
-                    error => {
-                        if (error) return Logger.error(error.stack);
-                    });
+                if (this.logError) {
+                    fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + error,
+                        error => {
+                            if (error) return Logger.error(error.stack);
+                        });
+                }
             })
             .on("message", msg => {
                 if (msg.author.bot) return;
@@ -62,7 +64,7 @@ class Tasker extends Discord.Client {
                 this.handler.getTask(query, this.tasks, options.prefix)
                     .then(task => {
                         if (this.handler.checkPermission(msg, this, task.load))
-                            return this.send(msg.channel, "⛔", "You have no permission do this task.");
+                            return;
                         if (typeof task.load.task !== "function")
                             return Logger.warn("Loaded task has no action!");
                         msg.channel.startTyping();
@@ -76,33 +78,17 @@ class Tasker extends Discord.Client {
                     });
             })
 
-            process
-                .on("SIGINT", () => this.shutdown())
-                .on("SIGUSR1", () => this.shutdown())
-                .on("SIGUSR2", () => this.shutdown())
-                .on("unhandledRejection", (reason, promise) => {
-                    this.throwError("Unhandled Promise Rejection.", reason);
-                })
-                .on("uncaughtException", (error) => {
-                    this.throwError("Uncaught Exception.", error);
-                    this.options.ownerID.forEach(id => {
-                        var dmChannel = this.users.get(id);
-                        this.send(dmChannel, "⚠", "An uncaught exception has occured and the bot has shutdown.");
-                        dmChannel.send(error, {code: "md"});
-                    });
-                    this.shutdown();
-                });
-    }
-
-    /**
-     * Send a formatted message to a channel
-     * @param {MessageChannel} channel 
-     * @param {String} icon 
-     * @param {String} content
-     * @memberof Tasker
-     */
-    send(channel, icon, content) {
-        return channel.send(`${icon} » ${content}`);
+        process
+            .on("SIGINT", () => this.shutdown())
+            .on("SIGUSR1", () => this.shutdown())
+            .on("SIGUSR2", () => this.shutdown())
+            .on("unhandledRejection", (reason, promise) => {
+                this.throwError("Unhandled Promise Rejection.", reason);
+            })
+            .on("uncaughtException", (error) => {
+                this.throwError("Uncaught Exception.", error);
+                this.shutdown();
+            });
     }
 
     /**
@@ -166,18 +152,26 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     loadJob(job) {
+        this.jobs[job.name].name = job.name;
+        this.jobs[job.name].do = job.task.bind(null, this);
         this.jobs[job.name] = new Cron.CronJob({
             cronTime: job.time,
             timeZone: job.timezone,
             start: false,
-            onTick: job.task.bind(null, this)
+            onTick: () => {
+                try {
+                    this.jobs[job.name].do();
+                }
+                catch(error) {
+                    this.throwError(`A job error occured in "${this.jobs[job.name].name}".`, error);
+                }
+            }
         });
-        this.jobs[job.name].do = job.task.bind(null, this);
         Logger.generic("Loaded job module: " + job.name);
     }
 
     /**
-     * Force do a cron job
+     * Force run a cron job
      * @param {String} name
      * @memberof Tasker
      */
