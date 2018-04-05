@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const EnmapRethink = require('enmap-rethink');
+const EnmapProvider = require('enmap-level');
 const Enmap = require('enmap');
 const Cron = require('cron');
 const fs = require('fs');
@@ -27,7 +27,7 @@ class Tasker extends Discord.Client {
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
         this.logError = options.logError || false;
-        this.settings = new Enmap({provider: new EnmapRethink({name: "table"})});
+        this.settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
         
         this.handler = new Handler(this);
         this.jobs = {};
