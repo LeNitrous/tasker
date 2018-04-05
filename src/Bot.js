@@ -152,21 +152,16 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     loadJob(job) {
-        this.jobs[job.name].name = job.name;
-        this.jobs[job.name].do = job.task.bind(null, this);
         this.jobs[job.name] = new Cron.CronJob({
             cronTime: job.time,
             timeZone: job.timezone,
             start: false,
             onTick: () => {
-                try {
-                    this.jobs[job.name].do();
-                }
-                catch(error) {
-                    this.throwError(`A job error occured in "${this.jobs[job.name].name}".`, error);
-                }
+                this.doJob(this.jobs[job.name].name);
             }
         });
+        this.jobs[job.name].name = job.name;
+        this.jobs[job.name].do = job.task.bind(null, this);
         Logger.generic("Loaded job module: " + job.name);
     }
 
@@ -176,7 +171,12 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     doJob(name) {
-        this.jobs[name].do();
+        try {
+            this.jobs[job.name].do();
+        }
+        catch(error) {
+            this.throwError(`A job error occured in "${this.jobs[job.name].name}".`, error);
+        }
     }
 
     /**
