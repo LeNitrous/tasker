@@ -15,7 +15,6 @@ const ExecError = require('./models/ErrorExecution.js');
  * @param {Object} options Client configuration options
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
  * @param {String} options.prefix Bot's prefix to recognize commands
- * @param {Boolean} options.logError Bot logs most recent error.
  * @param {String[]} options.ownerID Bot's owner mapped in a string array
  */
 class Tasker extends Discord.Client {
@@ -26,7 +25,6 @@ class Tasker extends Discord.Client {
         this.prefix = options.prefix;
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
-        this.logError = options.logError || false;
         this.settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
         
         this.handler = new Handler(this);
@@ -45,18 +43,7 @@ class Tasker extends Discord.Client {
                 }
                 Logger.info("CLIENT CONNECTED");
             })
-            .on("error", error => {
-                Logger.error(error);
-                if (error instanceof ExecError && error.msg.channel) {
-                    error.msg.channel.stopTyping(true);
-                }
-                if (this.logError) {
-                    fs.writeFile("./error.log", "Last exception occured at " + new Date() + "\n" + error,
-                        error => {
-                            if (error) return Logger.error(error.stack);
-                        });
-                }
-            })
+            .on("error", error => Logger.error(error))
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
@@ -74,7 +61,8 @@ class Tasker extends Discord.Client {
                         msg.channel.stopTyping(true);
                     })
                     .catch(error => {
-                        this.throwError(msg, error);
+                        msg.channel.stopTyping(true);
+                        this.throwError(error);
                     });
             });
 
@@ -227,8 +215,8 @@ class Tasker extends Discord.Client {
      * @param {Error} error 
      * @memberof Tasker
      */
-    throwError(msg, error) {
-        this.emit("error", new ExecError(error, msg));
+    throwError(error) {
+        this.emit("error", new ExecError(error));
     }
 }
 
