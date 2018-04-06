@@ -178,10 +178,11 @@ class Tasker extends Discord.Client {
 
     /**
      * Perform a command with highest privelleges
-     * @param {String[]} query
+     * @param {Message} msg Discord Message Object
+     * @param {String[]} query Command in string array as if ran by a user
      * @memberof Tasker
      */
-    invoke(query) {
+    invoke(msg, query) {
         this.handler.getTask(query, this.tasks, this.prefix)
             .then(task => {
                 msg.channel.startTyping();
