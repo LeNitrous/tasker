@@ -61,7 +61,7 @@ class Tasker extends Discord.Client {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
                 var query = msg.content.slice(this.prefix.length).split(" ");
-                this.handler.getTask(query, this.tasks, options.prefix)
+                this.handler.getTask(query, this.tasks, this.prefix)
                     .then(task => {
                         if (this.handler.checkPermission(msg, this, task.load))
                             return;
@@ -76,7 +76,7 @@ class Tasker extends Discord.Client {
                     .catch(error => {
                         this.throwError(msg, error);
                     });
-            })
+            });
 
         process
             .on("SIGINT", () => this.shutdown())
@@ -186,6 +186,23 @@ class Tasker extends Discord.Client {
      */
     destroyJob(name) {
         this.jobs[name] = undefined;
+    }
+
+    /**
+     * Perform a command with highest privelleges
+     * @param {String[]} query
+     * @memberof Tasker
+     */
+    invoke(query) {
+        this.handler.getTask(query, this.tasks, this.prefix)
+            .then(task => {
+                msg.channel.startTyping();
+                task.load.task(this, msg, task.args);
+                msg.channel.stopTyping(true);
+            })
+            .catch(error => {
+                this.throwError(msg, error);
+            });
     }
 
     /**
