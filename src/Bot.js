@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
-const ExecError = require('./models/ErrorExecution.js');
+const Error = require('./models/Error.js');
 
 /**
  * The bot class
@@ -62,7 +62,7 @@ class Tasker extends Discord.Client {
                     })
                     .catch(error => {
                         msg.channel.stopTyping(true);
-                        this.throwError(error);
+                        this.throwError("task", error);
                     });
             });
 
@@ -71,10 +71,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                this.throwError("Unhandled Promise Rejection.", reason);
+                this.throwError("event", reason, "Caught an unhandled promise rejection.");
             })
             .on("uncaughtException", (error) => {
-                this.throwError("Uncaught Exception.", error);
+                this.throwError("event", error, "Caught an uncaught exception.");
                 this.shutdown();
             });
     }
@@ -163,7 +163,7 @@ class Tasker extends Discord.Client {
             this.jobs[job.name].do();
         }
         catch(error) {
-            this.throwError(`A job error occured in "${this.jobs[job.name].name}".`, error);
+            this.throwError("job", error);
         }
     }
 
@@ -200,7 +200,7 @@ class Tasker extends Discord.Client {
                 msg.channel.stopTyping(true);
             })
             .catch(error => {
-                this.throwError(msg, error);
+                this.throwError("task", error);
             });
     }
 
@@ -222,12 +222,12 @@ class Tasker extends Discord.Client {
 
     /**
      * Emit an error event passing error arguments
-     * @param {String} msg 
+     * @param {String} type
      * @param {Error} error 
      * @memberof Tasker
      */
-    throwError(error) {
-        this.emit("error", new ExecError(error));
+    throwError(type, error) {
+        this.emit("error", new Error[type](error));
     }
 }
 
