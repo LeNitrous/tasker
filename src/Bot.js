@@ -121,17 +121,17 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     loadEvent(event) {
-        this.events[event.name] = this.on(event.event, event.task);
-        Logger.generic("Loaded event module: " + event.name);
+        this.events[event.event] = this.on(event.event, event.task.bind(null, this));
+        Logger.generic("Loaded event module: " + event.event);
     }
 
     /**
      * Remove a client event
-     * @param {String} name 
+     * @param {String} event 
      * @memberof Tasker
      */
-    destroyEvent(name) {
-        this.events[name] = undefined;
+    destroyEvent(event) {
+        this.events[event] = undefined;
     }
 
     /**
