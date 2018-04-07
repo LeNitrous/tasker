@@ -177,12 +177,22 @@ class Tasker extends Discord.Client {
     }
 
     /**
-     * Perform a command with highest privelleges
-     * @param {Message} msg Discord Message Object
+     * Perform a command with highest privelleges. Contains a fake Message Object.
+     * The fake Message Object only contains channel, guild, author, and member data
+     * with the latter two being the bot client itself.
+     * 
+     * **Not all commands will work!**
+     * @param {Channel} channel Discord Channel to invoke the command
      * @param {String[]} query Command in string array as if ran by a user
      * @memberof Tasker
      */
-    invoke(msg, query) {
+    invoke(channel, query) {
+        var msg = {
+            channel: channel,
+            guild: channel.guild,
+            author: Kokoro.user,
+            member: channel.guild.members.get(Kokoro.user.id)
+        }
         this.handler.getTask(query, this.tasks, this.prefix)
             .then(task => {
                 msg.channel.startTyping();
