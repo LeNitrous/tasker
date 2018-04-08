@@ -160,7 +160,7 @@ class Tasker extends Discord.Client {
      */
     doJob(name) {
         try {
-            this.jobs[job.name].do();
+            this.jobs[name].do();
         }
         catch(error) {
             this.throwError("job", error);
