@@ -121,7 +121,7 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     loadEvent(event) {
-        this.events[event.event] = this.on(event.event, event.task.bind(null, this));
+        this.events[event.event] = this.on(event.event, event.task);
         Logger.generic("Loaded event module: " + event.event);
     }
 
