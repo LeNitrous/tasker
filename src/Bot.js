@@ -190,8 +190,8 @@ class Tasker extends Discord.Client {
         var msg = {
             channel: channel,
             guild: channel.guild,
-            author: Kokoro.user,
-            member: channel.guild.members.get(Kokoro.user.id)
+            author: this.user,
+            member: channel.guild.members.get(this.user.id)
         }
         this.handler.getTask(query, this.tasks, this.prefix)
             .then(task => {
