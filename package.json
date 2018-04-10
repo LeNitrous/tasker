@@ -9,7 +9,8 @@
     "discord.js": "^11.3.0",
     "enmap": "^2.1.0",
     "enmap-level": "^2.0.2",
-    "glob": "^7.1.2"
+    "glob": "^7.1.2",
+    "node-gyp": "^3.6.2"
   },
   "devDependencies": {},
   "scripts": {

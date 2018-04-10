@@ -50,19 +50,19 @@ class Tasker extends Discord.Client {
                 var query = msg.content.slice(this.prefix.length).split(" ");
                 this.handler.getTask(query, this.tasks, this.prefix)
                     .then(task => {
-                        if (this.handler.checkPermission(msg, this, task.load))
-                            return;
-                        if (typeof task.load.task !== "function")
-                            return Logger.warn("Loaded task has no action!");
-                        msg.channel.startTyping();
-                        Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
-                            msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
-                        task.load.task(this, msg, task.args);
-                        msg.channel.stopTyping(true);
+                        if (!this.handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                            Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
+                                msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
+                            return task;
+                        }
+                        else
+                            throw null;
                     })
+                    .then(task => task.load.task(this, msg, task.args))
                     .catch(error => {
-                        msg.channel.stopTyping(true);
-                        this.throwError("task", error);
+                        if (error != null) {
+                            this.throwError("task", error);
+                        }
                     });
             });
 
