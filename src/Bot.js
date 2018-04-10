@@ -194,11 +194,7 @@ class Tasker extends Discord.Client {
             member: channel.guild.members.get(this.user.id)
         }
         this.handler.getTask(query, this.tasks, this.prefix)
-            .then(task => {
-                msg.channel.startTyping();
-                task.load.task(this, msg, task.args);
-                msg.channel.stopTyping(true);
-            })
+            .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
                 this.throwError("task", error);
             });
