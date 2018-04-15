@@ -25,6 +25,7 @@ class TaskHandler {
                     name: "Tasks",
                     desc: "Root task directory"
                 });
+                root.tasks.help = new Task(require("./internal/help.js"));
                 if (err)
                     reject(err);
                 else {
@@ -34,7 +35,10 @@ class TaskHandler {
                     var expr = /\.[a-zA-Z]*/;
                     var file = items.filter(str => str.search(expr) > -1);
                     var folder = items.filter(str => str.search(expr) < 0);
-                    folder.forEach(str => root.tasks[str] = new TaskGroup(require(path.resolve(".", dir, str,"settings.json"))));
+                    folder.forEach(str => {
+                        root.tasks[str] = new TaskGroup(require(path.resolve(".", dir, str,"settings.json")))
+                        root.tasks[str].tasks.help = new Task(require("./internal/help.js"));
+                    });
                     file.forEach(str => {
                         if (str.search(/[a-zA-Z]*\//) > -1) {
                             if (!str.endsWith(".js")) return;
