@@ -39,7 +39,8 @@ class TaskHandler {
                         root.tasks[str] = new TaskGroup(require(path.resolve(".", dir, str,"settings.json")))
                         root.tasks[str].tasks.help = new Task(require("./internal/help.js"));
                         root.tasks[str].tasks.help.task = (Bot, msg, args) => {
-                            var help = Bot.handler.help(Bot, msg, str);
+                            args.push(str);
+                            var help = Bot.handler.help(Bot, msg, args);
                             msg.author.send(help, {code: "md"});
                         }
                     });
