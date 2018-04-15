@@ -132,7 +132,7 @@ class TaskHandler {
             }
             case 1: {
                 if (root.tasks[parentArg] instanceof TaskGroup)
-                    helpText.push(stringifyGroupHelp(root.tasks[parentArg]));
+                    helpText.push(stringifyGroupHelp(root.tasks[parentArg], args));
                 else if (root.tasks[parentArg] instanceof Task)
                     helpText.push(stringifyTaskHelp(root.tasks[parentArg], bot, args));
                 break;
@@ -148,12 +148,14 @@ class TaskHandler {
     }
 }
 
-function stringifyGroupHelp(taskGroup) {
+function stringifyGroupHelp(taskGroup, args) {
     var strArray = [];
     strArray.push(`# ${taskGroup.name}:`);
     for (var task in taskGroup.tasks) {
-        if (taskGroup.tasks[task] instanceof Task)
+        if (taskGroup.tasks[task] instanceof Task && args === undefined)
             strArray.push(": " + padString(task, 15) + taskGroup.tasks[task].desc);
+        else if (taskGroup.tasks[task] instanceof Task)
+            strArray.push(": " + `${padString(args + " " + task, 15)}` + taskGroup.tasks[task].desc);
     }
     for (var task in taskGroup.tasks) {
         if (taskGroup.tasks[task] instanceof TaskGroup) {
