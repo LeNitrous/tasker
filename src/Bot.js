@@ -223,7 +223,7 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     throwError(type, error) {
-        this.emit("error", new error[type](error));
+        this.emit("error", new Error(error));
     }
 }
 
