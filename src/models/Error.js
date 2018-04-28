@@ -45,4 +45,5 @@ module.exports = {
     job: JobError,
     task: TaskError,
     event: EventError,
+    generic: Error
 };

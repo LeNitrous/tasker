@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
-const Error = require('./models/Error.js');
+const error = require('./models/Error.js');
 
 /**
  * The bot class
@@ -43,7 +43,7 @@ class Tasker extends Discord.Client {
                 }
                 Logger.info("CLIENT CONNECTED");
             })
-            .on("error", error => Logger.error(error))
+            .on("error", error => Logger.error(error.stack))
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
@@ -71,10 +71,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                this.throwError("event", reason, "Caught an unhandled promise rejection.");
+                this.throwError("generic", reason);
             })
             .on("uncaughtException", (error) => {
-                this.throwError("event", error, "Caught an uncaught exception.");
+                this.throwError("generic", error);
                 this.shutdown();
             });
     }
@@ -223,7 +223,7 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     throwError(type, error) {
-        this.emit("error", new Error[type](error));
+        this.emit("error", new error[type](error));
     }
 }
 
