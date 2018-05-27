@@ -6,7 +6,6 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
-const error = require('./models/Error.js');
 
 /**
  * The bot class
@@ -71,10 +70,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                this.throwError("generic", reason);
+                this.throwError(reason);
             })
             .on("uncaughtException", (error) => {
-                this.throwError("generic", error);
+                this.throwError(error);
                 this.shutdown();
             });
     }
@@ -222,7 +221,7 @@ class Tasker extends Discord.Client {
      * @param {Error} error 
      * @memberof Tasker
      */
-    throwError(type, error) {
+    throwError(error) {
         this.emit("error", new Error(error));
     }
 }
