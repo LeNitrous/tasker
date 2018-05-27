@@ -32,7 +32,7 @@ module.exports = {
 };
 
 function getTimestamp() {
-	var date = Date.now();
+	var date = new Date();
 	var h = date.getHours().toString().padStart(2, "0");
 	var m = date.getMinutes().toString().padStart(2, "0");
 	var s = date.getSeconds().toString().padStart(2, "0");
