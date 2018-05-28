@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
+const Error = require('./models/Error.js');
 
 /**
  * The bot class
@@ -15,6 +16,7 @@ const Logger = require('./Logger.js');
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
  * @param {String} options.prefix Bot's prefix to recognize commands
  * @param {String[]} options.ownerID Bot's owner mapped in a string array
+ * @param {Number} options.timeout Cooldown before a user can use a command again
  */
 class Tasker extends Discord.Client {
     constructor(options = {}) {
@@ -24,12 +26,15 @@ class Tasker extends Discord.Client {
         this.prefix = options.prefix;
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
+        this.timeout = options.timeout;
+
         this.settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
-        
         this.handler = new Handler(this);
+        this.logger = Logger;
         this.jobs = {};
         this.tasks = {};
         this.events = {};
+        this.onTimeout = [];
 
         this
             .on("warn", w => Logger.warn(w))
@@ -46,6 +51,17 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
+                if (this.onTimeout.includes(msg.author.id))
+                    return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
+                if (this.timeout > 0) {
+                    this.onTimeout.push(msg.author.id);
+                    setTimeout(() => {
+                        var userOnTimeout = this.onTimeout.indexOf(msg.author.id);
+                        if (userOnTimeout > -1) {
+                            this.onTimeout.splice(userOnTimeout, 1);
+                        }
+                    }, this.timeout);
+                }
                 var query = msg.content.slice(this.prefix.length).split(" ");
                 this.handler.getTask(query, this.tasks, this.prefix)
                     .then(task => {
@@ -62,6 +78,7 @@ class Tasker extends Discord.Client {
                         if (error != null) {
                             this.throwError("task", error);
                         }
+                        msg.channel.stopTyping(true);
                     });
             });
 
@@ -73,7 +90,7 @@ class Tasker extends Discord.Client {
                 this.throwError(reason);
             })
             .on("uncaughtException", (error) => {
-                this.throwError(error);
+                this.throwError("generic", error);
                 this.shutdown();
             });
     }
@@ -121,7 +138,7 @@ class Tasker extends Discord.Client {
      */
     loadEvent(event) {
         this.events[event.event] = this.on(event.event, event.task);
-        Logger.generic("Loaded event module: " + event.event);
+        Logger.info("Loaded event module: " + event.event);
     }
 
     /**
@@ -149,7 +166,7 @@ class Tasker extends Discord.Client {
         });
         this.jobs[job.name].name = job.name;
         this.jobs[job.name].do = job.task.bind(null, this);
-        Logger.generic("Loaded job module: " + job.name);
+        Logger.info("Loaded job module: " + job.name);
     }
 
     /**
@@ -221,8 +238,8 @@ class Tasker extends Discord.Client {
      * @param {Error} error 
      * @memberof Tasker
      */
-    throwError(error) {
-        this.emit("error", new Error(error));
+    throwError(type, error) {
+        this.emit("error", new Error[type](error));
     }
 }
 

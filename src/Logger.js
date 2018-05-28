@@ -5,10 +5,6 @@ module.exports = {
 	info(text, h = 'INFO') {
 		return console.log(`${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`);
 	},
-
-	generic(text, h = 'INFO') {
-		return console.log(`${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`);
-	},
 	
 	debug(text, h = 'DEBUG') {
 		return console.log(`${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`);
@@ -20,6 +16,10 @@ module.exports = {
 	
 	error(text, h = 'ERROR') {
 		return console.log(`${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`);
+	},
+
+	log(text) {
+		return console.log(`${getTimestamp()} ${text}`);
 	},
 	
 	logCommand(guildName, userName, commandName, channelName) {
