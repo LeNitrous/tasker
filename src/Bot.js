@@ -146,7 +146,7 @@ class Tasker extends Discord.Client {
      */
     loadEvent(event) {
         this.events[event.event] = this.on(event.event, event.task);
-        this.Logger.info("Loaded event module: " + event.event);
+        this.Logger.log("Loaded event module: " + event.event);
     }
 
     /**
@@ -174,7 +174,7 @@ class Tasker extends Discord.Client {
         });
         this.jobs[job.name].name = job.name;
         this.jobs[job.name].do = job.task.bind(null, this);
-        this.Logger.info("Loaded job module: " + job.name);
+        this.Logger.log("Loaded job module: " + job.name);
     }
 
     /**
