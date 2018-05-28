@@ -99,7 +99,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                this.Logger.error(new Error(reason));
+                if (reason.stack)
+                    this.Logger.error(new Error(reason.stack));
+                else
+                    this.Logger.error(new Error(reason));
             })
             .on("uncaughtException", (error) => {
                 this.Logger.error(new Error(error.stack));
