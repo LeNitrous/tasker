@@ -23,7 +23,7 @@ class Logger {
 		var log = `${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
@@ -33,7 +33,7 @@ class Logger {
 		var log = `${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
@@ -43,7 +43,7 @@ class Logger {
 		var log = `${getTimestamp()} ${chalk.bgYellow.black(` ${h} `)} ${text}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
@@ -53,7 +53,7 @@ class Logger {
 		var log = `${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
@@ -63,7 +63,7 @@ class Logger {
 		var log = `${getTimestamp()} ${text}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
@@ -77,7 +77,7 @@ class Logger {
 			log = `${getTimestamp()} ${chalk.bold.green(userName)} ${chalk.bold.yellow('»')} ${commandName}`;
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, log, function(error) {
+			fs.appendFile(this.logFile, "\n" + log, function(error) {
 				if (error) throw error;
 			});
 		}
