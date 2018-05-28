@@ -36,7 +36,7 @@ class Tasker extends Discord.Client {
         this.jobs = {};
         this.tasks = {};
         this.events = {};
-        this.onTimeout = [];
+        this.onTimeout = {};
 
         this
             .on("warn", w => this.Logger.warn(w))
@@ -59,31 +59,34 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
-                if (this.onTimeout.includes(msg.author.id)) {
-                    if (msg.guild)
-                        return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
-                    else
-                        return msg.channel.send(`Please wait for a moment for your next request.`);
-                }
-                if (this.timeout > 0) {
-                    this.onTimeout.push(msg.author.id);
-                    setTimeout(() => {
-                        var userOnTimeout = this.onTimeout.indexOf(msg.author.id);
-                        if (userOnTimeout > -1) {
-                            this.onTimeout.splice(userOnTimeout, 1);
-                        }
-                    }, this.timeout);
-                }
                 var query = msg.content.slice(this.prefix.length).split(" ");
                 this.Handler.getTask(query, this.tasks, this.prefix)
                     .then(task => {
-                        if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                        var permissionState = this.Handler.checkPermission(msg, this, task.load);
+                        if (!permissionState && permissionState != "HasCooldown" && typeof task.load.task === "function") {
                             this.Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
                                 msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
                             return task;
                         }
-                        else
-                            throw null;
+                        else if (permissionState == "HasCooldown") {
+                            if (msg.guild)
+                                return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
+                            else
+                                return msg.channel.send(`Please wait for a moment for your next request.`);
+                        }
+                        if (this.timeout > 0) {
+                            if (!this.onTimeout.hasOwnProperty(msg.author.id))
+                                this.onTimeout[msg.author.id] = [];
+                            this.onTimeout[msg.author.id].push(task.name);
+                            setTimeout(() => {
+                                var userOnTimeout = this.onTimeout[msg.author.id];
+                                var cmdOnTimeout = userOnTimeout.indexOf(task.name);
+                                if (cmdOnTimeout > -1)
+                                    this.onTimeout.splice(cmdOnTimeout, 1);
+                                if (userOnTimeout.length < 1)
+                                    delete this.onTimeout[msg.author.id];
+                            }, this.timeout);
+                        }
                     })
                     .then(task => task.load.task(this, msg, task.args))
                     .catch(error => {
