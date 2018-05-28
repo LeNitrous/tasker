@@ -88,7 +88,7 @@ class Tasker extends Discord.Client {
                     .then(task => task.load.task(this, msg, task.args))
                     .catch(error => {
                         if (error != null) {
-                            throw new Errors.Task(error);
+                            this.Logger.error(new Errors.Task()error);
                         }
                         msg.channel.stopTyping(true);
                     });
@@ -99,10 +99,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                throw new Error(error);
+                this.Logger.error(new Error(error));
             })
             .on("uncaughtException", (error) => {
-                throw new Error(error);
+                this.Logger.error(new Error(error));
                 this.shutdown();
             });
     }
@@ -191,7 +191,7 @@ class Tasker extends Discord.Client {
             this.jobs[name].do();
         }
         catch(error) {
-            throw new Errors.Job(error);
+            this.Logger.error(new Errors.Job(e)rror);
         }
     }
 
@@ -224,7 +224,7 @@ class Tasker extends Discord.Client {
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
-                throw new Errors.Task(error);
+                this.Logger.error(new Errors.Task()error);
             });
     }
 
