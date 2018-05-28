@@ -9,7 +9,7 @@ class Logger {
 			var header = [
 				"-------------------------------------------------------------",
 				`Runtime Log for Tasker`,
-				`started on ${new Date().now()}`,
+				`started on ${new Date()}`,
 				`running on ${process.platform}`,
 				"-------------------------------------------------------------",
 			];
