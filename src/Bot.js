@@ -59,8 +59,12 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
-                if (this.onTimeout.includes(msg.author.id))
-                    return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
+                if (this.onTimeout.includes(msg.author.id)) {
+                    if (msg.guild)
+                        return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
+                    else
+                        return msg.channel.send(`Please wait for a moment for your next request.`);
+                }
                 if (this.timeout > 0) {
                     this.onTimeout.push(msg.author.id);
                     setTimeout(() => {
