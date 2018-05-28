@@ -5,7 +5,7 @@ class Logger {
 	constructor(logFile) {
 		this.logFile = logFile || null;
 
-		if (logFile) {
+		if (this.logFile) {
 			var header = [
 				"-------------------------------------------------------------",
 				`Runtime Log for Tasker`,
