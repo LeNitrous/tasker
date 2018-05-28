@@ -6,7 +6,7 @@ module.exports = {
         {name: "command", desc: "Command name"}
     ],
     task: (Bot, msg, args) => {
-        var help = Bot.handler.help(Bot, msg, args);
+        var help = Bot.Handler.help(Bot, msg, args);
         msg.author.send(help, {code: "md"});
     }
 };
