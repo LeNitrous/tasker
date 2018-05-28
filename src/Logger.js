@@ -1,35 +1,90 @@
 const chalk = require('chalk');
-	
-module.exports = {
-	
-	info(text, h = 'INFO') {
-		return console.log(`${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`);
-	},
-	
-	debug(text, h = 'DEBUG') {
-		return console.log(`${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`);
-	},
-	
-	warn(text, h = 'WARN') {
-		return console.log(`${getTimestamp()} ${chalk.bgYellow.black(` ${h} `)} ${text}`);
-	},
-	
-	error(text, h = 'ERROR') {
-		return console.log(`${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`);
-	},
+const fs = require('fs');
 
-	log(text) {
-		return console.log(`${getTimestamp()} ${text}`);
-	},
-	
-	logCommand(guildName, userName, commandName, channelName) {
-		if (guildName)
-			return console.log(`${getTimestamp()} ${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan('#')}${chalk.bold.cyan(channelName)} ${chalk.bold.yellow('»')} ${commandName}`);
-		else
-			return console.log(`${getTimestamp()} ${chalk.bold.green(userName)} ${chalk.bold.yellow('»')} ${commandName}`);
+class Logger {
+	constructor(logFile) {
+		this.logFile = logFile || null;
+
+		if (logFile) {
+			var header = [
+				"-------------------------------------------------------------",
+				`Runtime Log for Tasker`,
+				`started on ${new Date.now()}`,
+				`running on ${process.platform}`,
+				"-------------------------------------------------------------",
+			];
+			fs.writeFile(logFile, header.join("\n"), function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+
+	info(text, h = 'INFO') {
+		var log = `${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
 	}
 	
-};
+	debug(text, h = 'DEBUG') {
+		var log = `${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+	
+	warn(text, h = 'WARN') {
+		var log = `${getTimestamp()} ${chalk.bgYellow.black(` ${h} `)} ${text}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+	
+	error(text, h = 'ERROR') {
+		var log = `${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+
+	log(text) {
+		var log = `${getTimestamp()} ${text}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+	
+	logCommand(guildName, userName, commandName, channelName) {
+		var log;
+		if (guildName)
+			log = `${getTimestamp()} ${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan('#')}${chalk.bold.cyan(channelName)} ${chalk.bold.yellow('»')} ${commandName}`;
+		else
+			log = `${getTimestamp()} ${chalk.bold.green(userName)} ${chalk.bold.yellow('»')} ${commandName}`;
+		console.log(log);
+		if (logFile) {
+			fs.appendFile(logFile, log, function(error) {
+				if (error) throw error;
+			});
+		}
+	}
+}
+
+module.exports = Logger;
 
 function getTimestamp() {
 	var date = new Date();

@@ -27,27 +27,35 @@ class Tasker extends Discord.Client {
         this.ownerID = options.ownerID;
         this.taskDir = options.tasks;
         this.timeout = options.timeout;
+        this.logFile = options.logFile;
 
-        this.settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
-        this.handler = new Handler(this);
-        this.logger = Logger;
+        this.Settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
+        this.Handler = new Handler(this);
+        this.Logger = new Logger(this.logFile);
+
         this.jobs = {};
         this.tasks = {};
         this.events = {};
         this.onTimeout = [];
 
         this
-            .on("warn", w => Logger.warn(w))
-            .on("disconnect", () => Logger.error("CLIENT DISCONNECTED", "WARN"))
-            .on("reconnected", () => Logger.warn("CLIENT RECONNECTING"))
-            .on("resume", () => Logger.info("CLIENT RECONNECTED"))
+            .on("warn", w => this.Logger.warn(w))
+            .on("disconnect", () => this.Logger.error("CLIENT DISCONNECTED", "WARN"))
+            .on("reconnected", () => this.Logger.warn("CLIENT RECONNECTING"))
+            .on("resume", () => this.Logger.info("CLIENT RECONNECTED"))
             .on("ready", () => {
                 for (var job in this.jobs) {
                     this.jobs[job].start();
                 }
-                Logger.info("CLIENT CONNECTED");
+                this.Logger.info("CLIENT CONNECTED");
             })
-            .on("error", error => Logger.error(error.stack))
+            .on("error", error => this.Logger.error(error.stack))
+            .on("guildCreate", guild => {
+                this.Logger.info(`Client joined ${guild.name} (ID: ${guild.id})`, "JOIN");
+            })
+            .on("guildDelete", guild => {
+                this.Logger.warn(`Client left ${guild.name} (ID: ${guild.id})`, "LEFT");
+            })
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
@@ -63,10 +71,10 @@ class Tasker extends Discord.Client {
                     }, this.timeout);
                 }
                 var query = msg.content.slice(this.prefix.length).split(" ");
-                this.handler.getTask(query, this.tasks, this.prefix)
+                this.Handler.getTask(query, this.tasks, this.prefix)
                     .then(task => {
-                        if (!this.handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
-                            Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
+                        if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                            this.Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
                                 msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
                             return task;
                         }
@@ -102,14 +110,14 @@ class Tasker extends Discord.Client {
      */
     start() {
         return new Promise((resolve, reject) => {
-            this.handler.loadTasks(this.taskDir)
+            this.Handler.loadTasks(this.taskDir)
                 .then(tasks => {
                     this.tasks = tasks;
                     this.login(this.token);
                     resolve(this);
                 })
                 .catch(error =>
-                    Logger.error(error.stack)
+                    this.Logger.error(error.stack)
                 )
         })
     }
@@ -121,12 +129,12 @@ class Tasker extends Discord.Client {
      */
     reloadTasks() {
         return new Promise((resolve, reject) => {
-            this.handler.loadTasks(this.taskDir)
+            this.Handler.loadTasks(this.taskDir)
             .then(tasks => {
                 this.tasks = tasks;
             })
             .catch(error =>
-                Logger.error(error.stack)
+                this.Logger.error(error.stack)
             )
         })
     }
@@ -138,7 +146,7 @@ class Tasker extends Discord.Client {
      */
     loadEvent(event) {
         this.events[event.event] = this.on(event.event, event.task);
-        Logger.info("Loaded event module: " + event.event);
+        this.Logger.info("Loaded event module: " + event.event);
     }
 
     /**
@@ -166,7 +174,7 @@ class Tasker extends Discord.Client {
         });
         this.jobs[job.name].name = job.name;
         this.jobs[job.name].do = job.task.bind(null, this);
-        Logger.info("Loaded job module: " + job.name);
+        this.Logger.info("Loaded job module: " + job.name);
     }
 
     /**
@@ -209,7 +217,7 @@ class Tasker extends Discord.Client {
             author: this.user,
             member: channel.guild.members.get(this.user.id)
         }
-        this.handler.getTask(query, this.tasks, this.prefix)
+        this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
                 this.throwError("task", error);
@@ -221,13 +229,13 @@ class Tasker extends Discord.Client {
      * @memberof Tasker
      */
     shutdown() {
-        Logger.warn("Shutting down");
+        this.Logger.warn("Shutting down");
         this.destroy()
             .then(() =>
                 process.exit()
             )
             .catch(error => {
-                Logger.error("An error has occured...\n");
+                this.Logger.error("An error has occured...\n");
                 console.log(e);
             })
     }
