@@ -42,8 +42,7 @@ class JobError extends Error {
 }
 
 module.exports = {
-    job: JobError,
-    task: TaskError,
-    event: EventError,
-    generic: Error
+    Job: JobError,
+    Task: TaskError,
+    Event: EventError
 };

@@ -6,7 +6,7 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
-const Error = require('./models/Error.js');
+const Errors = require('./models/Error.js');
 
 /**
  * The bot class
@@ -88,7 +88,7 @@ class Tasker extends Discord.Client {
                     .then(task => task.load.task(this, msg, task.args))
                     .catch(error => {
                         if (error != null) {
-                            this.throwError("task", error);
+                            throw new Errors.Task(error);
                         }
                         msg.channel.stopTyping(true);
                     });
@@ -99,10 +99,10 @@ class Tasker extends Discord.Client {
             .on("SIGUSR1", () => this.shutdown())
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
-                this.throwError(reason);
+                throw new Error(error);
             })
             .on("uncaughtException", (error) => {
-                this.throwError("generic", error);
+                throw new Error(error);
                 this.shutdown();
             });
     }
@@ -191,7 +191,7 @@ class Tasker extends Discord.Client {
             this.jobs[name].do();
         }
         catch(error) {
-            this.throwError("job", error);
+            throw new Errors.Job(error);
         }
     }
 
@@ -224,7 +224,7 @@ class Tasker extends Discord.Client {
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
-                this.throwError("task", error);
+                throw new Errors.Task(error);
             });
     }
 
@@ -242,16 +242,6 @@ class Tasker extends Discord.Client {
                 this.Logger.error("An error has occured...\n");
                 console.log(e);
             })
-    }
-
-    /**
-     * Emit an error event passing error arguments
-     * @param {String} type
-     * @param {Error} error 
-     * @memberof Tasker
-     */
-    throwError(type, error) {
-        this.emit("error", new Error[type](error));
     }
 }
 
