@@ -6,7 +6,6 @@ const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
-const Errors = require('./models/Error.js');
 
 /**
  * The bot class
@@ -59,42 +58,35 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
-                var query = msg.content.slice(this.prefix.length).split(" ");
-                this.Handler.getTask(query, this.tasks, this.prefix)
-                    .then(task => {
-                        var permissionState = this.Handler.checkPermission(msg, this, task.load);
-                        if (!permissionState && permissionState != "HasCooldown" && typeof task.load.task === "function") {
-                            this.Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
-                                msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
-                            return task;
-                        }
-                        else if (permissionState == "HasCooldown") {
-                            if (msg.guild)
-                                return msg.channel.send(`${msg.member.toString()} please wait for a moment for your next request.`);
-                            else
-                                return msg.channel.send(`Please wait for a moment for your next request.`);
-                        }
-                        if (this.timeout > 0) {
-                            if (!this.onTimeout.hasOwnProperty(msg.author.id))
-                                this.onTimeout[msg.author.id] = [];
-                            this.onTimeout[msg.author.id].push(task.name);
-                            setTimeout(() => {
-                                var userOnTimeout = this.onTimeout[msg.author.id];
-                                var cmdOnTimeout = userOnTimeout.indexOf(task.name);
-                                if (cmdOnTimeout > -1)
-                                    this.onTimeout.splice(cmdOnTimeout, 1);
-                                if (userOnTimeout.length < 1)
-                                    delete this.onTimeout[msg.author.id];
-                            }, this.timeout);
-                        }
-                    })
-                    .then(task => task.load.task(this, msg, task.args))
-                    .catch(error => {
-                        if (error != null) {
-                            this.Logger.error(new Errors.Task(error.stack));
-                        }
-                        msg.channel.stopTyping(true);
-                    });
+                if (this.onTimeout.hasOwnProperty(msg.author.id)) {
+                    var timeleft = Math.ceil((this.onTimeout[msg.author.id] - Date.now()) / 1000);
+                    if (msg.guild)
+                        msg.channel.send(`${msg.author.toString()}, please wait **${timeleft} seconds** for your next request.`);
+                    else
+                        msg.channel.send(`Please wait **${timeleft} seconds** for your next request.`);
+                }
+                else {
+                    this.onTimeout[msg.author.id] = Date.now() + this.timeout * 1000;
+                    setTimeout(() => {
+                        delete this.onTimeout[msg.author.id];
+                    }, this.timeout * 1000);
+                    var query = msg.content.slice(this.prefix.length).split(" ");
+                    this.Handler.getTask(query, this.tasks, this.prefix)
+                        .then(task => {
+                            if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                                this.Logger.logCommand(msg.channel.guild === undefined ? null: msg.channel.guild.name, 
+                                    msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
+                                return task;
+                            }
+                        })
+                        .then(task => task.load.task(this, msg, task.args))
+                        .catch(error => {
+                            if (error != null) {
+                                this.Logger.error(error.stack);
+                            }
+                            msg.channel.stopTyping(true);
+                        });
+                }
             });
 
         process
@@ -103,12 +95,12 @@ class Tasker extends Discord.Client {
             .on("SIGUSR2", () => this.shutdown())
             .on("unhandledRejection", (reason, promise) => {
                 if (reason.stack)
-                    this.Logger.error(new Error(reason.stack));
+                    this.Logger.error(reason.stack);
                 else
-                    this.Logger.error(new Error(reason));
+                    this.Logger.error(reason);
             })
             .on("uncaughtException", (error) => {
-                this.Logger.error(new Error(error.stack));
+                this.Logger.error(error.stack);
                 this.shutdown();
             });
     }
@@ -197,7 +189,7 @@ class Tasker extends Discord.Client {
             this.jobs[name].do();
         }
         catch(error) {
-            this.Logger.error(new Errors.Job(error.stack));
+            this.Logger.error(error.stack);
         }
     }
 
@@ -230,7 +222,7 @@ class Tasker extends Discord.Client {
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
-                this.Logger.error(new Errors.Task(error.stack));
+                this.Logger.error(error.stack);
             });
     }
 
@@ -246,7 +238,7 @@ class Tasker extends Discord.Client {
             )
             .catch(error => {
                 this.Logger.error("An error has occured...\n");
-                console.log(e);
+                console.log(error);
             })
     }
 }

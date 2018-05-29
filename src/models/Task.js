@@ -13,6 +13,7 @@ class Task {
      * @param {String} input.args[].name Argument property name.
      * @param {String} input.args[].desc Argument property description.
      * @param {Boolean} input.args[].optional Argument property requirement.
+     * @param {Number} input.time Task cooldown in seconds.
      * @param {Function} input.task Task method to invoke when called.
      */
     constructor(input) {

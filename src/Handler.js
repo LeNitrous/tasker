@@ -56,6 +56,7 @@ class TaskHandler {
                             root.tasks[name] = new Task(require(path.resolve(".", dir, str)));
                         }
                     });
+                    root.tasks.logs = new Task(require("./internal/logs.js"));
                 }
                 resolve(root);
             });
@@ -102,8 +103,6 @@ class TaskHandler {
             return "ServerOnly";
         if (task.preq.includes("BotOwnerOnly") && !bot.ownerID.includes(msg.author.id))
             return "BotOwnerOnly";
-        if (task.preq.includes("HasCooldown") && bot.onTimeout.includes(msg.author.id) && bot.timeout > 0)
-            return "HasCooldown";
         if (task.preq.includes("HasElevatedPerms") && task.preq.includes("ServerOnly"))
             if (!msg.member.permissions.has(perm, true))
                 return "HasElevatedPerms";
