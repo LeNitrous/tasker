@@ -213,12 +213,12 @@ class Tasker extends Discord.Client {
      * @param {User} user _OPTIONAL_ The user invoking the command as
      * @memberof Tasker
      */
-    invoke(channel, query, user) {
+    invoke(channel, query, user = this.user) {
         var msg = {
             channel: channel,
             guild: channel.guild,
-            author: this.user || user,
-            member: channel.guild.members.get(this.user.id) || channel.guild.members.get(user.id)
+            author: user,
+            member: channel.guild.members.get(user.id)
         }
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
