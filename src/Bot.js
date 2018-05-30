@@ -210,14 +210,15 @@ class Tasker extends Discord.Client {
      * **Not all commands will work!**
      * @param {Channel} channel Discord Channel to invoke the command
      * @param {String[]} query Command in string array as if ran by a user
+     * @param {User} user _OPTIONAL_ The user invoking the command as
      * @memberof Tasker
      */
-    invoke(channel, query) {
+    invoke(channel, query, user) {
         var msg = {
             channel: channel,
             guild: channel.guild,
-            author: this.user,
-            member: channel.guild.members.get(this.user.id)
+            author: this.user || user,
+            member: channel.guild.members.get(this.user.id) || channel.guild.members.get(user.id)
         }
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => task.load.task(this, msg, task.args))
