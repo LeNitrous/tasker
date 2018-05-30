@@ -20,64 +20,63 @@ class Logger {
 	}
 
 	info(text, h = 'INFO') {
-		var log = `${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`;
-		console.log(log);
+		console.log(`${getTimestamp()} ${chalk.bgGreen.black(` ${h} `)} ${text}`);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + `${getTimestamp()} ${h} ${text}`, function(error) {
 				if (error) throw error;
 			});
 		}
 	}
 	
 	debug(text, h = 'DEBUG') {
-		var log = `${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`;
-		console.log(log);
+		console.log(`${getTimestamp()} ${chalk.bgWhite.black(` ${h} `)} ${text}`);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + `${getTimestamp()} ${h} ${text}`, function(error) {
 				if (error) throw error;
 			});
 		}
 	}
 	
 	warn(text, h = 'WARN') {
-		var log = `${getTimestamp()} ${chalk.bgYellow.black(` ${h} `)} ${text}`;
-		console.log(log);
+		console.log(`${getTimestamp()} ${chalk.bgYellow.black(` ${h} `)} ${text}`);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + `${getTimestamp()} ${h} ${text}`, function(error) {
 				if (error) throw error;
 			});
 		}
 	}
 	
 	error(text, h = 'ERROR') {
-		var log = `${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`;
-		console.log(log);
+		console.log(`${getTimestamp()} ${chalk.bgRed.white(` ${h} `)} ${text}`);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + `${getTimestamp()} ${h} ${text}`, function(error) {
 				if (error) throw error;
 			});
 		}
 	}
 
 	log(text) {
-		var log = `${getTimestamp()} ${text}`;
-		console.log(log);
+		console.log(`${getTimestamp()} ${text}`);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + `${getTimestamp()} ${text}`, function(error) {
 				if (error) throw error;
 			});
 		}
 	}
 	
 	logCommand(guildName, userName, commandName, channelName) {
-		var log;
-		if (guildName)
-			log = `${getTimestamp()} ${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan('#')}${chalk.bold.cyan(channelName)} ${chalk.bold.yellow('»')} ${commandName}`;
-		else
+		var log, logOut;
+		if (guildName) {
+			log = `${getTimestamp()} ${chalk.bold.green(userName)} @ ${chalk.bold.blue(guildName)} in ${chalk.bold.cyan(`#${channelName}`)} ${chalk.bold.yellow('»')} ${commandName}`;
+			logOut = `${getTimestamp()} ${userName} @ ${guildName} in #${channelName} » ${commandName}`;
+		}
+		else {
 			log = `${getTimestamp()} ${chalk.bold.green(userName)} ${chalk.bold.yellow('»')} ${commandName}`;
+			logOut = `${getTimestamp()} ${userName} » ${commandName}`;
+		}	
 		console.log(log);
 		if (this.logFile) {
-			fs.appendFile(this.logFile, "\n" + log, function(error) {
+			fs.appendFile(this.logFile, "\n" + logOut, function(error) {
 				if (error) throw error;
 			});
 		}
