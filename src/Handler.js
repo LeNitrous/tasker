@@ -110,7 +110,7 @@ class TaskHandler {
             return "DMChatOnly";
         if (task.preq.includes("ServerOnly") && msg.channel.guild == undefined)
             return "ServerOnly";
-        if (task.preq.includes("BotOwnerOnly") && !bot.ownerID.includes(msg.author.id) && msg.author.id != client.user.id)
+        if (task.preq.includes("BotOwnerOnly") && !bot.ownerID.includes(msg.author.id) && msg.author.id != msg.client.user.id)
             return "BotOwnerOnly";
         if (task.preq.includes("HasElevatedPerms") && task.preq.includes("ServerOnly"))
             if (!msg.member.permissions.has(perm, true))
