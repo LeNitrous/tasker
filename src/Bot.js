@@ -234,6 +234,11 @@ class Tasker extends Discord.Client {
             member: channel.guild.members.get(user.id)
         }
         this.Handler.getTask(query, this.tasks, this.prefix)
+            .then(task => {
+                if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                    return task;
+                }
+            })
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
                 this.Logger.error(error.stack);
