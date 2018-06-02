@@ -53,7 +53,10 @@ class Tasker extends Discord.Client {
                 }
                 this.Logger.info("CLIENT CONNECTED");
             })
-            .on("error", error => this.Logger.error(error.stack))
+            .on("error", error => {
+                if (error.stack)
+                    this.Logger.error(error.stack);
+            })
             .on("guildCreate", guild => {
                 this.Logger.info(`Client joined ${guild.name} (ID: ${guild.id})`, "JOIN");
             })
@@ -105,8 +108,10 @@ class Tasker extends Discord.Client {
                     this.Logger.error(reason);
             })
             .on("uncaughtException", (error) => {
-                this.Logger.error(error.stack);
-                this.shutdown();
+                if (error.stack)
+                    this.Logger.error(error.stack);
+                else
+                    this.Logger.error(error);
             });
     }
 
@@ -126,7 +131,7 @@ class Tasker extends Discord.Client {
                 .catch(error =>
                     this.Logger.error(error.stack)
                 )
-        })
+        });
     }
 
     /**
