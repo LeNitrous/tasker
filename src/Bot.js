@@ -246,6 +246,8 @@ class Tasker extends Discord.Client {
             .then(task => {
                 if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function")
                     return task;
+                else
+                    throw null;
             })
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
