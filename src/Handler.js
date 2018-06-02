@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const glob = require('glob');
 const Task = require('./models/Task.js');
@@ -25,7 +26,6 @@ class TaskHandler {
                     name: "Tasks",
                     desc: "Root task directory"
                 });
-                root.tasks.help = new Task(require("./internal/help.js"));
                 if (err)
                     reject(err);
                 else {
@@ -37,12 +37,16 @@ class TaskHandler {
                     var folder = items.filter(str => str.search(expr) < 0);
                     folder.forEach(str => {
                         root.tasks[str] = new TaskGroup(require(path.resolve(".", dir, str,"settings.json")))
-                        root.tasks[str].tasks.help = new Task(require("./internal/help.js"));
-                        root.tasks[str].tasks.help.task = (Bot, msg, args) => {
-                            args.push(str);
-                            var help = Bot.handler.help(Bot, msg, args);
-                            msg.author.send(help, {code: "md"});
-                        }
+                        root.tasks[str].tasks.help = new Task({
+                            name: `${root.tasks[str].name} Help`,
+                            desc: "Bot task listing",
+                            help: "Send yourself a list of useable tasks within the bot.",
+                            task: (Bot, msg, args) => {
+                                args.push(str);
+                                var help = Bot.handler.help(Bot, msg, args);
+                                msg.author.send(help, {code: "md"});
+                            }
+                        });
                     });
                     file.forEach(str => {
                         if (str.search(/[a-zA-Z]*\//) > -1) {
@@ -56,7 +60,12 @@ class TaskHandler {
                             root.tasks[name] = new Task(require(path.resolve(".", dir, str)));
                         }
                     });
-                    root.tasks.logs = new Task(require("./internal/logs.js"));
+                    fs.readdir(__dirname + "/internal/", (err, files) => {
+                        files.forEach(file => {
+                            var name = file.split(".")[0];
+                            root.tasks[name] = new Task(require("./internal/" + file));
+                        });
+                    });
                 }
                 resolve(root);
             });
