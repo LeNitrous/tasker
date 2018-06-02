@@ -27,6 +27,7 @@ class Tasker extends Discord.Client {
         this.taskDir = options.tasks;
         this.timeout = options.timeout;
         this.logFile = options.logFile;
+        this.debug = options.debug;
 
         this.Settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
         this.Handler = new Handler(this);
@@ -42,6 +43,10 @@ class Tasker extends Discord.Client {
             .on("disconnect", () => this.Logger.error("CLIENT DISCONNECTED", "WARN"))
             .on("reconnected", () => this.Logger.warn("CLIENT RECONNECTING"))
             .on("resume", () => this.Logger.info("CLIENT RECONNECTED"))
+            .on("debug", d => {
+                if (this.debug)
+                    this.Logger.warn(d, "DEBUG");
+            })
             .on("ready", () => {
                 for (var job in this.jobs) {
                     this.jobs[job].start();
@@ -205,7 +210,7 @@ class Tasker extends Discord.Client {
     /**
      * Perform a command with highest privelleges. Contains a fake Message Object.
      * The fake Message Object only contains channel, guild, author, and member data
-     * with the latter two being the bot client itself.
+     * with the latter two being the bot client itself unless specified.
      * 
      * **Not all commands will work!**
      * @param {Channel} channel Discord Channel to invoke the command
