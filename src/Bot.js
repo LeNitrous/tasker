@@ -92,9 +92,8 @@ class Tasker extends Discord.Client {
                         })
                         .then(task => task.load.task(this, msg, task.args))
                         .catch(error => {
-                            if (error != null) {
+                            if (error != null)
                                 this.Logger.error(error.stack);
-                            }
                             msg.channel.stopTyping(true);
                         });
                 }
@@ -216,7 +215,7 @@ class Tasker extends Discord.Client {
     }
 
     /**
-     * Perform a command with highest privelleges. Contains a fake Message Object.
+     * Perform a command containing a fake Message Object.
      * The fake Message Object only contains channel, guild, author, and member data
      * with the latter two being the bot client itself unless specified.
      * 
@@ -235,13 +234,15 @@ class Tasker extends Discord.Client {
         }
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => {
-                if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function") {
+                if (!this.Handler.checkPermission(msg, this, task.load) && typeof task.load.task === "function")
                     return task;
-                }
             })
             .then(task => task.load.task(this, msg, task.args))
             .catch(error => {
-                this.Logger.error(error.stack);
+                if (error == null)
+                    this.Logger.error("This user cannot invoke the command.");
+                else
+                    this.Logger.error(error.stack);
             });
     }
 
