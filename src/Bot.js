@@ -74,10 +74,6 @@ class Tasker extends Discord.Client {
                         msg.channel.send(`Please wait **${timeleft} seconds** for your next request.`);
                 }
                 else {
-                    this.onTimeout[msg.author.id] = Date.now() + this.timeout * 1000;
-                    setTimeout(() => {
-                        delete this.onTimeout[msg.author.id];
-                    }, this.timeout * 1000);
                     var query = msg.content.slice(this.prefix.length).split(" ");
                     this.Handler.getTask(query, this.tasks, this.prefix)
                         .then(task => {
@@ -86,6 +82,13 @@ class Tasker extends Discord.Client {
                                     msg.author.username, msg.content.slice(this.prefix.length), msg.channel.name);
                                 return task;
                             }
+                        })
+                        .then(task => {
+                            this.onTimeout[msg.author.id] = Date.now() + this.timeout * 1000;
+                            setTimeout(() => {
+                                delete this.onTimeout[msg.author.id];
+                            }, this.timeout * 1000);
+                            return task;
                         })
                         .then(task => task.load.task(this, msg, task.args))
                         .catch(error => {
