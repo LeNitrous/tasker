@@ -115,7 +115,17 @@ Bot.loadJob(myJob);
 - Please refer to [crontab.js](https://github.com/kelektiv/node-cron#available-cron-patterns) for the available cron patterns.
 - Please refer to [momentjs](https://momentjs.com/timezone/) for the available timezones.
 
-## Methods
+## Tasker Properties
+Tasker has properties to be set alongside discord.js to make use of it's utilities.
+- `tasks` - The tasks directory in glob pattern. Please refer to [glob](https://github.com/isaacs/node-glob) documentation.
+- `token` - The application's token provided by Discord.
+- `prefix` - The prefix when running tasks.
+- `ownerID` - An array of strings of all IDs of the owners.
+- `timeout` - A number in seconds as cooldown in between requests.
+- `debug` - A boolean to enable discord.js' debug events.
+- `logFile` - The directory where to log and save the bot's logs.
+
+## Tasker Methods
 Tasker also provides utility methods.
 
 #### .start()
@@ -127,32 +137,38 @@ Reloads the tasks directory. Useful when appending new tasks without the need of
 
 #### .loadEvent(event)
 - `event` - The event's unique name
+
 Loads an event. See the example above.
 
 #### .destroyEvent(event)
 - `event` - The event's unique name
+
 Destroy's the event and stops listening for it.
 
 #### .loadJob(job)
 - `job` - The job's unique name
+
 Loads a job. See the example above.
 
-#### .doJob(job) {
+#### .doJob(job)
 - `job` - The job's unique name
+
 Force runs a job. 
 }
 
 #### .destroyJob(job)
 - `job` - The job's unique name
+
 Destroys and stops the job.
 
 #### .invoke(channel, content, user)
 - `channel` - The guild channel.
 - `content` - The content as if sent by a user without the prefix.
 - `user` - The user invoking the command as. Defaults to the bot itself when not provided.
+
 This simulates a task being ran with permissions still being applied to it. Triggers an error when the user can't invoke it.
 
-### .shutdown()
+#### .shutdown()
 Gracefully shuts down the bot.
 
 ## License
