@@ -113,7 +113,7 @@ class TaskHandler {
         if (task.preq.includes("BotOwnerOnly") && !bot.ownerID.includes(msg.author.id) && msg.author.id != msg.client.user.id)
             return "BotOwnerOnly";
         if (task.preq.includes("HasElevatedPerms") && task.preq.includes("ServerOnly"))
-            if (!msg.member.permissions.has(perm, true))
+            if (!msg.member.permissions.has(task.perm, true))
                 return "HasElevatedPerms";
         if (task.preq.includes("ServerOwnerOnly") && task.preq.includes("ServerOnly"))
             if (msg.author.id != msg.guild.ownerID)
@@ -134,21 +134,27 @@ class TaskHandler {
         const parentArg = args[0];
         const childArg = args[1];
         const footer = `\n- Type "${bot.prefix}help <command>" for more details.`;
+        const empty = "There is no help text to display. Are you sure the command exists?";
 
         switch(args.length) {
             case 0: {
-                helpText.push(stringifyGroupHelp(root));
+                helpText.push(stringifyGroupHelp(root, this, bot, msg));
                 break;
             }
             case 1: {
                 if (root.tasks[parentArg] instanceof TaskGroup)
-                    helpText.push(stringifyGroupHelp(root.tasks[parentArg], args));
+                    helpText.push(stringifyGroupHelp(root.tasks[parentArg], this, bot, msg, args));
                 else if (root.tasks[parentArg] instanceof Task)
-                    helpText.push(stringifyTaskHelp(root.tasks[parentArg], bot, args));
+                    helpText.push(stringifyTaskHelp(root.tasks[parentArg], this, bot, msg, args));
+                else
+                    helpText.push(empty);
                 break;
             }
             case 2: {
-                helpText.push(stringifyTaskHelp(root.tasks[parentArg].tasks[childArg], bot, args));
+                if (root.tasks[parentArg].tasks[childArg] instanceof Task)
+                    helpText.push(stringifyTaskHelp(root.tasks[parentArg].tasks[childArg], this, bot, msg, args));
+                else
+                    helpText.push(empty);
                 break;
             }
         }
@@ -158,44 +164,54 @@ class TaskHandler {
     }
 }
 
-function stringifyGroupHelp(taskGroup, args) {
+function stringifyGroupHelp(taskGroup, handler, bot, msg, args) {
     var strArray = [];
     strArray.push(`# ${taskGroup.name}:`);
     for (var task in taskGroup.tasks) {
-        if (taskGroup.tasks[task] instanceof Task && args === undefined)
-            strArray.push(": " + padString(task, 15) + taskGroup.tasks[task].desc);
-        else if (taskGroup.tasks[task] instanceof Task)
-            strArray.push(": " + `${padString(args + " " + task, 15)}` + taskGroup.tasks[task].desc);
+        if (taskGroup.tasks[task] instanceof Task) {
+            if (!handler.checkPermission(msg, bot, taskGroup.tasks[task])) {
+                if (args === undefined)
+                    strArray.push(": " + padString(task, 15) + taskGroup.tasks[task].desc);
+                else
+                    strArray.push(": " + `${padString(args + " " + task, 15)}` + taskGroup.tasks[task].desc);
+            }
+        }      
     }
     for (var task in taskGroup.tasks) {
         if (taskGroup.tasks[task] instanceof TaskGroup) {
-            strArray.push(`\n# ${taskGroup.tasks[task].name}:`)
-            for (var innerTask in taskGroup.tasks[task].tasks) {
-                strArray.push(": " + `${padString(task + " " + innerTask, 15)}` +
-                taskGroup.tasks[task].tasks[innerTask].desc);
+            if (!handler.checkPermission(msg, bot, taskGroup.tasks[task])) {
+                strArray.push(`\n# ${taskGroup.tasks[task].name}:`)
+                for (var innerTask in taskGroup.tasks[task].tasks) {
+                    strArray.push(": " + `${padString(task + " " + innerTask, 15)}` +
+                    taskGroup.tasks[task].tasks[innerTask].desc);
+                }
             }
         }
     }
     return strArray.join('\n');
 }
 
-function stringifyTaskHelp(task, bot, args) {
-    var strArray = [];
-    var name = args.join(' ');
-    var usage = task.args.map(item => `<${item.name}>`).join(' ') || "";
-    strArray.push(`# ${task.name}`);
-    strArray.push(`- ${task.help}`);
-    strArray.push(`\t${bot.prefix}${name} ${usage}`);
-    strArray.push("- Arguments:");
-    if (task.args.length > 0) {
-        task.args.forEach(item => {
-            if (item.optional)
-                strArray.push(`\t= "${item.name}" ― (OPTIONAL) ${item.desc}`);
-            else
-                strArray.push(`\t= "${item.name}" ― ${item.desc}`);
-        });
+function stringifyTaskHelp(task, handler, bot, msg, args) {
+    if (!handler.checkPermission(msg, bot, task)) {
+        var strArray = [];
+        var name = args.join(' ');
+        var usage = task.args.map(item => `<${item.name}>`).join(' ') || "";
+        strArray.push(`# ${task.name}`);
+        strArray.push(`- ${task.help}`);
+        strArray.push(`\t${bot.prefix}${name} ${usage}`);
+        strArray.push("- Arguments:");
+        if (task.args.length > 0) {
+            task.args.forEach(item => {
+                if (item.optional)
+                    strArray.push(`\t= "${item.name}" ― (OPTIONAL) ${item.desc}`);
+                else
+                    strArray.push(`\t= "${item.name}" ― ${item.desc}`);
+            });
+        }
+        return strArray.join('\n');
     }
-    return strArray.join('\n');
+    else
+        return "You have no permission to view this command.";
 }
 
 function padString(string, padLength) {
