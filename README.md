@@ -153,8 +153,7 @@ Loads a job. See the example above.
 #### .doJob(job)
 - `job` - The job's unique name
 
-Force runs a job. 
-}
+Force runs a job.
 
 #### .destroyJob(job)
 - `job` - The job's unique name

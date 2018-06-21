@@ -1,6 +1,4 @@
 const Discord = require('discord.js');
-const EnmapProvider = require('enmap-level');
-const Enmap = require('enmap');
 const Cron = require('cron');
 const fs = require('fs');
 
@@ -29,7 +27,6 @@ class Tasker extends Discord.Client {
         this.logFile = options.logFile;
         this.debug = options.debug;
 
-        this.Settings = new Enmap({provider: new EnmapProvider({name: "settings"})});
         this.Handler = new Handler(this);
         this.Logger = new Logger(this.logFile);
 
@@ -51,17 +48,17 @@ class Tasker extends Discord.Client {
                 for (var job in this.jobs) {
                     this.jobs[job].start();
                 }
-                this.Logger.info("CLIENT CONNECTED");
+                this.Logger.info(`CLIENT CONNECTED as ${this.user.tag} (ID: ${this.user.id})`);
             })
             .on("error", error => {
                 if (error.stack)
                     this.Logger.error(error.stack);
             })
             .on("guildCreate", guild => {
-                this.Logger.info(`Client joined ${guild.name} (ID: ${guild.id})`, "JOIN");
+                this.Logger.info(`CLIENT JOIN ${guild.name} (ID: ${guild.id})`, "JOIN");
             })
             .on("guildDelete", guild => {
-                this.Logger.warn(`Client left ${guild.name} (ID: ${guild.id})`, "LEFT");
+                this.Logger.warn(`CLIENT LEFT ${guild.name} (ID: ${guild.id})`, "LEFT");
             })
             .on("message", msg => {
                 if (msg.author.bot) return;
