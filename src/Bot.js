@@ -48,7 +48,6 @@ class Tasker extends Discord.Client {
                     this.jobs[job].start();
                 }
                 this.Logger.info(`CLIENT CONNECTED as ${this.user.tag} (ID: ${this.user.id})`);
-                process.send('ready');
             })
             .on("error", error => {
                 if (error.stack)
