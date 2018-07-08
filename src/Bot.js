@@ -1,6 +1,5 @@
 const Discord = require('discord.js');
 const Cron = require('cron');
-const fs = require('fs');
 
 const Handler = require('./Handler.js');
 const Logger = require('./Logger.js');
@@ -12,7 +11,7 @@ const Logger = require('./Logger.js');
  * @param {Object} options Client configuration options
  * @param {String} options.tasks Bot's tasks (commands) directory in glob syntax
  * @param {String} options.prefix Bot's prefix to recognize commands
- * @param {String[]} options.ownerID Bot's owner mapped in a string array
+ * @param {String[]} options.ownerID Bot owner's id mapped in a string array
  * @param {Number} options.timeout Cooldown before a user can use a command again
  */
 class Tasker extends Discord.Client {
@@ -66,10 +65,7 @@ class Tasker extends Discord.Client {
                 if (!msg.content.startsWith(this.prefix)) return;
                 if (this.onTimeout.hasOwnProperty(msg.author.id)) {
                     var timeleft = Math.ceil((this.onTimeout[msg.author.id] - Date.now()) / 1000);
-                    if (msg.guild)
-                        msg.channel.send(`${msg.author.toString()}, please wait **${timeleft} seconds** for your next request.`);
-                    else
-                        msg.channel.send(`Please wait **${timeleft} seconds** for your next request.`);
+                    this.emit("userOnTimeout", msg, timeleft);
                 }
                 else {
                     var query = msg.content.slice(this.prefix.length).split(" ");
@@ -90,8 +86,10 @@ class Tasker extends Discord.Client {
                         })
                         .then(task => task.load.task(this, msg, task.args))
                         .catch(error => {
-                            if (error != null)
+                            if (error != null) {
                                 this.Logger.error(error.stack);
+                                this.emit("taskError", error);
+                            }
                             msg.channel.stopTyping(true);
                         });
                 }
