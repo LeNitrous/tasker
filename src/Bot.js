@@ -225,7 +225,6 @@ class Tasker extends Discord.Client {
             channel: channel,
             guild: channel.guild,
             author: user,
-            member: channel.guild.members.get(user.id),
             content: content,
             editable: false,
             deletable: false,
@@ -236,6 +235,8 @@ class Tasker extends Discord.Client {
             pinnable: false,
             pinned: false
         };
+        if (channel.guild)
+            msg.member = channel.guild.members.get(user.id);
         var query = msg.content.split(" ");
         this.Handler.getTask(query, this.tasks, this.prefix)
             .then(task => {
