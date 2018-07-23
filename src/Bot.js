@@ -33,6 +33,7 @@ class Tasker extends Discord.Client {
         this.tasks = {};
         this.events = {};
         this.onTimeout = {};
+        this.frozen = false;
 
         this
             .on("warn", w => this.Logger.warn(w))
@@ -62,6 +63,7 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
+                if (this.frozen || this.ownerID.includes(msg.author.id)) return;
                 if (this.onTimeout.hasOwnProperty(msg.author.id)) {
                     var timeleft = Math.ceil((this.onTimeout[msg.author.id] - Date.now()) / 1000);
                     this.emit("userOnTimeout", msg, timeleft);
@@ -252,6 +254,23 @@ class Tasker extends Discord.Client {
                 else
                     this.Logger.error(error.stack);
             });
+    }
+
+    /**
+     * Toggle the frozen status of the bot by not accepting commands from other users other than 
+     * the owner and commands through invocation. Useful for maintenance.
+     * @param {string} [message="Maintenance"]
+     * @memberof Tasker
+     */
+    freeze(message = "Maintenance") {
+        if (this.frozen) {
+            this.frozen = true;
+            this.user.setPresence({ game: { name: "a Maintenance", type: "WATCHING"}, status: "dnd" });
+        }
+        else {
+            this.frozen = false;
+            this.user.setPresence({ status: "online" });
+        }
     }
 
     /**
