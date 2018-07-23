@@ -260,13 +260,13 @@ class Tasker extends Discord.Client {
     /**
      * Toggle the frozen status of the bot by not accepting commands from other users other than 
      * the owner and commands through invocation. Useful for maintenance.
-     * @param {string} [message="Maintenance"]
+     * @param {string} [message="a Maintenance"]
      * @memberof Tasker
      */
-    freeze(message = "Maintenance") {
-        if (this.frozen) {
+    freeze(message = "a Maintenance") {
+        if (!this.frozen) {
             this.frozen = true;
-            this.user.setPresence({ game: { name: "a Maintenance", type: "WATCHING"}, status: "dnd" });
+            this.user.setPresence({ game: { name: message, type: "WATCHING"}, status: "dnd" });
         }
         else {
             this.frozen = false;
