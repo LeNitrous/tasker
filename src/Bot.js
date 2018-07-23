@@ -63,7 +63,8 @@ class Tasker extends Discord.Client {
             .on("message", msg => {
                 if (msg.author.bot) return;
                 if (!msg.content.startsWith(this.prefix)) return;
-                if (this.frozen && !this.ownerID.includes(msg.author.id)) return;
+                if (this.frozen) 
+                    if (!this.ownerID.includes(msg.author.id)) return;
                 if (this.onTimeout.hasOwnProperty(msg.author.id)) {
                     var timeleft = Math.ceil((this.onTimeout[msg.author.id] - Date.now()) / 1000);
                     this.emit("userOnTimeout", msg, timeleft);
